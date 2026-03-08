@@ -1,0 +1,143 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Minimal Hyper-Blue Dark Theme */
+    --background: 0 0% 2%;
+    --foreground: 0 0% 98%;
+
+    /* Glassmorphic panels */
+    --card: 0 0% 5%;
+    --card-foreground: 0 0% 98%;
+
+    --popover: 0 0% 4%;
+    --popover-foreground: 0 0% 98%;
+
+    /* Hyper-Blue Highlight */
+    --primary: 210 100% 56%;
+    --primary-foreground: 0 0% 2%;
+
+    /* Neutral blue secondary */
+    --secondary: 210 24% 14%;
+    --secondary-foreground: 0 0% 98%;
+
+    /* Deep charcoal muted areas */
+    --muted: 0 0% 12%;
+    --muted-foreground: 0 0% 60%;
+
+    --accent: 198 100% 62%;
+    --accent-foreground: 0 0% 98%;
+
+    /* Sharp neon red */
+    --destructive: 350 100% 60%;
+    --destructive-foreground: 0 0% 98%;
+
+    /* Ultra-subtle borders */
+    --border: 0 0% 12%;
+    --input: 0 0% 12%;
+    
+    --ring: 210 100% 56%;
+
+    --radius: 1rem;
+
+    /* Custom tokens */
+    --gradient-primary: linear-gradient(135deg, hsl(210 100% 56%), hsl(198 100% 62%));
+    --shadow-glow: 0 0 34px -10px hsl(210 100% 56% / 0.6);
+    /* Outer subtle glow for hovered bento boxes */
+    --shadow-bento: 0 0 42px -16px hsl(210 100% 56% / 0.28);
+
+    /* Indicator colors */
+    --success: 152 70% 50%;
+    --success-foreground: 0 0% 2%;
+    --warning: 38 92% 55%;
+    --warning-foreground: 0 0% 2%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground font-sans antialiased selection:bg-primary/30 selection:text-white;
+    font-family: 'Inter', system-ui, sans-serif;
+    background-image: radial-gradient(circle at 50% 0%, #0b1220 0%, #050505 100%);
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply tracking-tighter text-foreground;
+  }
+
+  code, pre {
+    font-family: 'JetBrains Mono', monospace;
+  }
+}
+
+@layer utilities {
+  .bento-card {
+    @apply bg-white/[0.02] backdrop-blur-xl border border-white/[0.08] rounded-2xl relative overflow-hidden transition-all duration-500;
+  }
+  
+  .bento-card:hover {
+    @apply border-white/[0.15];
+    box-shadow: var(--shadow-bento);
+  }
+
+  .gradient-text {
+    background: var(--gradient-primary);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  /* Command Bar Input Wrapper */
+  .cmd-bar {
+    @apply relative flex items-center w-full max-w-2xl mx-auto rounded-xl border border-white/10 bg-black/60 backdrop-blur-2xl shadow-2xl transition-all duration-300;
+  }
+  .cmd-bar:focus-within {
+    @apply border-primary/50;
+    box-shadow: var(--shadow-glow);
+  }
+
+  .glow-border {
+    @apply border border-primary/40;
+    box-shadow: var(--shadow-glow);
+  }
+
+  .gradient-button {
+    background: var(--gradient-primary);
+    @apply text-white font-semibold rounded-xl transition-all duration-300 relative overflow-hidden;
+  }
+  
+  /* Button inner shimmer effect */
+  .gradient-button::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 50%;
+    height: 100%;
+    background: linear-gradient(to right, transparent, rgba(255,255,255,0.2), transparent);
+    transform: skewX(-20deg);
+    transition: none;
+  }
+  
+  .gradient-button:hover::after {
+    left: 150%;
+    transition: left 0.6s ease-in-out;
+  }
+
+  .gradient-button:hover {
+    box-shadow: 0 0 30px -5px hsl(191 100% 50% / 0.5);
+  }
+  
+  /* Thin Kanban column border */
+  .kanban-col {
+    @apply border-r border-white/5 last:border-r-0 min-h-[60vh];
+  }
+}
