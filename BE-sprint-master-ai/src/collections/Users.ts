@@ -127,6 +127,16 @@ export const Users: CollectionConfig = {
   admin: {
     useAsTitle: 'email',
     defaultColumns: ['email', 'firstName', 'lastName', 'subscription', 'sprintCount'],
+    components: {
+      edit: {
+        beforeDocumentControls: [
+          {
+            path: 'src/admin/users/UsersBeforeDocumentControls.tsx',
+            exportName: 'UsersBeforeDocumentControls',
+          },
+        ],
+      },
+    },
   },
   auth: {
     verify: {
@@ -208,93 +218,120 @@ export const Users: CollectionConfig = {
   },
   fields: [
     {
-      type: 'tabs',
-      tabs: [
+      type: 'collapsible',
+      label: 'Account',
+      admin: {
+        className: 'sm-users-section',
+        description: 'Email, Change Password, and Force Unlock are available in this document view.',
+        initCollapsed: false,
+      },
+      fields: [
         {
-          label: 'Profile',
-          fields: [
-            {
-              name: 'firstName',
-              type: 'text',
-              required: true,
-            },
-            {
-              name: 'lastName',
-              type: 'text',
-              required: true,
-            },
-            {
-              name: 'subscription',
-              type: 'select',
-              options: [
-                { label: 'Free', value: 'free' },
-                { label: 'Pro', value: 'pro' },
-              ],
-              defaultValue: 'free',
-              required: true,
-              access: {
-                create: adminOnlyUpdate,
-                update: adminOnlyUpdate,
-              },
-            },
-            {
-              name: 'role',
-              type: 'select',
-              options: [
-                { label: 'User', value: 'user' },
-                { label: 'Admin', value: 'admin' },
-              ],
-              defaultValue: 'user',
-              required: true,
-              access: {
-                create: adminOnlyUpdate,
-                update: adminOnlyUpdate,
-              },
-            },
-            {
-              name: 'isManualActivated',
-              type: 'checkbox',
-              defaultValue: false,
-              admin: {
-                description: 'Admin override: if enabled, this user can log in even if email verification was not completed.',
-              },
-              access: {
-                create: adminOnlyUpdate,
-                update: adminOnlyUpdate,
-              },
-            },
+          name: 'role',
+          type: 'select',
+          options: [
+            { label: 'User', value: 'user' },
+            { label: 'Admin', value: 'admin' },
           ],
+          defaultValue: 'user',
+          required: true,
+          access: {
+            create: adminOnlyUpdate,
+            update: adminOnlyUpdate,
+          },
         },
         {
-          label: 'Usage',
-          fields: [
-            {
-              name: 'sprintCount',
-              type: 'number',
-              defaultValue: 0,
-              admin: { readOnly: true },
-              access: { update: adminOnlyUpdate },
-            },
-            {
-              name: 'monthlySprintUsageMonth',
-              type: 'text',
-              admin: { readOnly: true },
-              access: { update: adminOnlyUpdate },
-            },
-            {
-              name: 'monthlySprintUsageCount',
-              type: 'number',
-              defaultValue: 0,
-              admin: { readOnly: true },
-              access: { update: adminOnlyUpdate },
-            },
-            {
-              name: 'sprints',
-              type: 'join',
-              collection: 'sprints',
-              on: 'createdBy',
-            },
+          name: 'isManualActivated',
+          type: 'checkbox',
+          defaultValue: false,
+          admin: {
+            description:
+              'Admin override: if enabled, this user can log in even if email verification was not completed.',
+          },
+          access: {
+            create: adminOnlyUpdate,
+            update: adminOnlyUpdate,
+          },
+        },
+      ],
+    },
+    {
+      type: 'collapsible',
+      label: 'Profile',
+      admin: {
+        className: 'sm-users-section',
+        initCollapsed: false,
+      },
+      fields: [
+        {
+          name: 'firstName',
+          type: 'text',
+          required: true,
+        },
+        {
+          name: 'lastName',
+          type: 'text',
+          required: true,
+        },
+      ],
+    },
+    {
+      type: 'collapsible',
+      label: 'Plan',
+      admin: {
+        className: 'sm-users-section',
+        initCollapsed: false,
+      },
+      fields: [
+        {
+          name: 'subscription',
+          type: 'select',
+          options: [
+            { label: 'Free', value: 'free' },
+            { label: 'Pro', value: 'pro' },
           ],
+          defaultValue: 'free',
+          required: true,
+          access: {
+            create: adminOnlyUpdate,
+            update: adminOnlyUpdate,
+          },
+        },
+        {
+          name: 'sprintCount',
+          type: 'number',
+          defaultValue: 0,
+          admin: { readOnly: true },
+          access: { update: adminOnlyUpdate },
+        },
+        {
+          name: 'monthlySprintUsageMonth',
+          type: 'text',
+          admin: { readOnly: true },
+          access: { update: adminOnlyUpdate },
+        },
+        {
+          name: 'monthlySprintUsageCount',
+          type: 'number',
+          defaultValue: 0,
+          admin: { readOnly: true },
+          access: { update: adminOnlyUpdate },
+        },
+      ],
+    },
+    {
+      type: 'collapsible',
+      label: 'Relations',
+      admin: {
+        className: 'sm-users-section',
+        initCollapsed: false,
+      },
+      fields: [
+        {
+          name: 'sprints',
+          type: 'join',
+          collection: 'sprints',
+          on: 'createdBy',
         },
       ],
     },
