@@ -1,5 +1,6 @@
 import type { CollectionConfig, FieldAccess } from 'payload'
 
+// صلاحية تمنع أي حد غير الأدمن من تعديل حقول معينة
 const adminOnlyUpdate: FieldAccess = ({ req }) =>
   (req.user as { role?: string } | null)?.role === 'admin'
 
@@ -10,16 +11,24 @@ export const Users: CollectionConfig = {
     defaultColumns: ['email', 'firstName', 'lastName', 'subscription', 'sprintCount'],
   },
   auth: {
-    // إجبار النظام على عدم طلب التحقق من الإيميل مؤقتاً للتأكد من نجاح الإنشاء
+    // إيقاف التحقق من الإيميل مؤقتاً لحين استقرار السيرفر
     verify: false, 
   },
   access: {
-    // فتح الإنشاء للعامة
+    // السماح للجميع بإنشاء حساب (التسجيل)
     create: () => true,
-    // فتح القراءة للعامة (مهم جداً للـ Auth)
+    // السماح للجميع بالقراءة (ضروري لعملية تسجيل الدخول)
     read: () => true,
-    update: ({ req: { user } }) => Boolean(user),
-    delete: ({ req: { user } }) => Boolean(user),
+    // التعديل مسموح فقط للأدمن أو لصاحب الحساب نفسه
+    update: ({ req: { user } }) => {
+      if (user?.role === 'admin') return true;
+      return { id: { equals: user?.id } };
+    },
+    // الحذف مسموح فقط للأدمن أو لصاحب الحساب نفسه
+    delete: ({ req: { user } }) => {
+      if (user?.role === 'admin') return true;
+      return { id: { equals: user?.id } };
+    },
   },
   fields: [
     {
