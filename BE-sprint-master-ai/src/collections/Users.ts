@@ -13,6 +13,8 @@ export const Users: CollectionConfig = {
   access: {
     create: () => true,
     read: () => true,
+    update: ({ req: { user } }) => Boolean(user),
+    delete: ({ req: { user } }) => Boolean(user),
   },
   fields: [
     {

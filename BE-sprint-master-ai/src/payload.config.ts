@@ -19,11 +19,10 @@ const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
 
 // Email env extraction
-const smtpHost = process.env.SMTP_HOST?.trim()
-const smtpPort = parseInt(process.env.SMTP_PORT || '587', 10)
 const smtpUser = process.env.SMTP_USER?.trim()
 const smtpPass = process.env.SMTP_PASS?.trim()
-const hasSmtp = Boolean(smtpHost && smtpPort && smtpUser && smtpPass)
+const fromEmail = process.env.FROM_EMAIL?.trim()
+const hasSmtp = Boolean(smtpUser && smtpPass && fromEmail)
 
 export default buildConfig({
   admin: {
@@ -52,7 +51,7 @@ export default buildConfig({
   ...(hasSmtp
     ? {
         email: nodemailerAdapter({
-          defaultFromAddress: process.env.FROM_EMAIL || '',
+          defaultFromAddress: fromEmail || '',
           defaultFromName: 'SprintMaster AI',
           transportOptions: {
             host: 'smtp-relay.brevo.com',
