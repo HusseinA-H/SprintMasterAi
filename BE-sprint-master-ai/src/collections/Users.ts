@@ -83,6 +83,7 @@ export const Users: CollectionConfig = {
     },
   },
   access: {
+    admin: ({ req: { user } }) => isAdmin(user as UserShape | null),
     create: () => true,
     read: readAccess,
     update: ownerOrAdminAccess,
@@ -106,9 +107,10 @@ export const Users: CollectionConfig = {
 
         // 1. منطق "أول أدمن": لو بنكريت أول مستخدم في السيستم، خليه verified فوراً
         if (operation === 'create') {
-          const usersCount = await req.payload.find({
+          const usersCount = await req.payload.count({
             collection: 'users',
-            limit: 0,
+            overrideAccess: true,
+            req,
           })
           
           if (usersCount.totalDocs === 0) {
@@ -154,6 +156,7 @@ export const Users: CollectionConfig = {
               defaultValue: 'free',
               required: true,
               access: {
+                create: adminOnlyUpdate,
                 update: adminOnlyUpdate,
               },
             },
@@ -167,6 +170,7 @@ export const Users: CollectionConfig = {
               defaultValue: 'user',
               required: true,
               access: {
+                create: adminOnlyUpdate,
                 update: adminOnlyUpdate,
               },
             },
@@ -178,6 +182,7 @@ export const Users: CollectionConfig = {
                 description: 'Admin override: if enabled, this user can log in even if email verification was not completed.',
               },
               access: {
+                create: adminOnlyUpdate,
                 update: adminOnlyUpdate,
               },
             },
