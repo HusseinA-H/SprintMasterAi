@@ -18,24 +18,7 @@ const ALLOWED_ORIGINS = Array.from(
   ]),
 )
 
-const parseBoolean = (value: string | undefined, defaultValue: boolean): boolean => {
-  if (!value) return defaultValue
-  return ['1', 'true', 'yes', 'on'].includes(value.trim().toLowerCase())
-}
-
 export function middleware(request: NextRequest) {
-  if (request.nextUrl.pathname === '/admin/create-first-user') {
-    const bootstrapEnabled = parseBoolean(process.env.ENABLE_FIRST_ADMIN_BOOTSTRAP, false)
-    const bootstrapTokenRequired = Boolean(process.env.FIRST_ADMIN_BOOTSTRAP_TOKEN?.trim())
-
-    if (!bootstrapEnabled || bootstrapTokenRequired) {
-      const url = request.nextUrl.clone()
-      url.pathname = '/bootstrap-setup-required'
-      url.searchParams.set('reason', !bootstrapEnabled ? 'disabled' : 'token-required')
-      return NextResponse.redirect(url)
-    }
-  }
-
   if (!request.nextUrl.pathname.startsWith('/api')) {
     return NextResponse.next()
   }
@@ -57,5 +40,5 @@ export function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/api/:path*', '/admin/create-first-user'],
+  matcher: '/api/:path*',
 }
