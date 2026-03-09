@@ -18,12 +18,12 @@ import { deleteSprintEndpoint } from './endpoints/deleteSprint'
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
 
-// إعدادات البريد الإلكتروني - تحسين استخراج المتغيرات
+// Email env extraction
 const smtpHost = process.env.SMTP_HOST?.trim()
+const smtpPort = parseInt(process.env.SMTP_PORT || '587', 10)
 const smtpUser = process.env.SMTP_USER?.trim()
 const smtpPass = process.env.SMTP_PASS?.trim()
-const smtpPort = parseInt(process.env.SMTP_PORT || '587', 10)
-const hasSmtp = Boolean(smtpHost && smtpUser && smtpPass)
+const hasSmtp = Boolean(smtpHost && smtpPort && smtpUser && smtpPass)
 
 export default buildConfig({
   admin: {
@@ -33,40 +33,35 @@ export default buildConfig({
     },
   },
   
-  // --- إعدادات الربط والأمان (CORS & CSRF) ---
   cors: [
+    'https://sprintmasterai.vercel.app',
     process.env.FRONTEND_ORIGIN,
-    'https://sprintmasterai.vercel.app', // دومين فيرسيل الأساسي للتأكيد
     'http://localhost:8080',
   ].filter(Boolean) as string[],
   
   csrf: [
-    process.env.FRONTEND_ORIGIN,
     'https://sprintmasterai.vercel.app',
+    process.env.FRONTEND_ORIGIN,
     'http://localhost:8080',
   ].filter(Boolean) as string[],
-  // ------------------------------------------
 
   collections: [Users, Media, Sprints, Tasks],
   editor: lexicalEditor(),
   secret: process.env.PAYLOAD_SECRET || '',
 
-  // البريد الإلكتروني المحسن للعمل مع Brevo
   ...(hasSmtp
     ? {
         email: nodemailerAdapter({
-          defaultFromAddress: process.env.FROM_EMAIL || smtpUser || '', 
+          defaultFromAddress: process.env.FROM_EMAIL || '',
           defaultFromName: 'SprintMaster AI',
           transportOptions: {
-            host: smtpHost,
-            port: smtpPort,
-            // Brevo يستخدم TLS مع بورت 587، لذا secure يجب أن تكون false
-            secure: smtpPort === 465, 
+            host: 'smtp-relay.brevo.com',
+            port: 587,
+            secure: false,
             auth: {
               user: smtpUser,
               pass: smtpPass,
             },
-            // إضافة لتحسين التوافق مع TLS
             tls: {
               rejectUnauthorized: false,
             },
