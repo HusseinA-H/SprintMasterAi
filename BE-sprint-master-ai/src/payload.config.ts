@@ -26,14 +26,16 @@ const parseFrontendOrigins = (value: string | undefined): string[] =>
         .filter(Boolean)
     : []
 
-// Email env extraction
+// استخراج متغيرات البريد الإلكتروني
 const smtpUser = process.env.SMTP_USER?.trim()
 const smtpPass = process.env.SMTP_PASS?.trim()
 const fromEmail = process.env.FROM_EMAIL?.trim()
 const hasSmtp = Boolean(smtpUser && smtpPass && fromEmail)
+
+// توحيد الروابط المسموح بها لمنع مشاكل CORS و CSRF
 const allowedOrigins = Array.from(
   new Set([
-    'https://sprintmasterai.vercel.app',
+    'https://sprintmaster-ai.vercel.app', // الدومين الصحيح الخاص بك
     ...parseFrontendOrigins(process.env.FRONTEND_ORIGIN),
     'http://localhost:8080',
   ]),
@@ -49,8 +51,8 @@ export default buildConfig({
   },
   cookiePrefix: process.env.PAYLOAD_COOKIE_PREFIX || 'sprintmasterai',
   
+  // تفعيل الروابط لـ CORS و CSRF معاً لضمان قبول طلبات التوثيق والإنشاء
   cors: allowedOrigins,
-  
   csrf: allowedOrigins,
 
   collections: [Users, Media, Sprints, Tasks],
@@ -62,18 +64,19 @@ export default buildConfig({
         email: nodemailerAdapter({
           defaultFromAddress: fromEmail || '',
           defaultFromName: 'SprintMaster AI',
-          skipVerify: true,
+          skipVerify: true, // تخطي التحقق المبدئي لتسريع عملية البناء
           transportOptions: {
             host: 'smtp-relay.brevo.com',
             port: 587,
-            secure: false,
-            connectionTimeout: 10000,
+            secure: false, // يجب أن تكون false لبورت 587 للعمل مع STARTTLS
+            connectionTimeout: 20000, // زيادة المهلة لتجنب ETIMEDOUT
+            greetingTimeout: 20000,
             auth: {
               user: smtpUser,
               pass: smtpPass,
             },
             tls: {
-              rejectUnauthorized: false,
+              rejectUnauthorized: false, // تجاوز قيود Handshake في شبكة Railway
             },
           },
         }),

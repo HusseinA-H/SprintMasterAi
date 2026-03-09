@@ -9,9 +9,14 @@ export const Users: CollectionConfig = {
     useAsTitle: 'email',
     defaultColumns: ['email', 'firstName', 'lastName', 'subscription', 'sprintCount'],
   },
-  auth: true,
+  auth: {
+    // إجبار النظام على عدم طلب التحقق من الإيميل مؤقتاً للتأكد من نجاح الإنشاء
+    verify: false, 
+  },
   access: {
+    // فتح الإنشاء للعامة
     create: () => true,
+    // فتح القراءة للعامة (مهم جداً للـ Auth)
     read: () => true,
     update: ({ req: { user } }) => Boolean(user),
     delete: ({ req: { user } }) => Boolean(user),
@@ -96,8 +101,7 @@ export const Users: CollectionConfig = {
               defaultValue: 0,
               admin: {
                 readOnly: true,
-                description:
-                  'Number of generated sprints in the tracked month. Not reduced by deletions.',
+                description: 'Number of generated sprints in the tracked month. Not reduced by deletions.',
               },
               access: {
                 update: adminOnlyUpdate,
