@@ -42,10 +42,12 @@ const allowedOrigins = Array.from(
 export default buildConfig({
   admin: {
     user: Users.slug,
+    autoLogin: true,
     importMap: {
       baseDir: path.resolve(dirname),
     },
   },
+  cookiePrefix: process.env.PAYLOAD_COOKIE_PREFIX || 'sprintmasterai',
   
   cors: allowedOrigins,
   
