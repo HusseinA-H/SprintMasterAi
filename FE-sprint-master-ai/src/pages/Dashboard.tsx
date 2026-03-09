@@ -236,6 +236,13 @@ const Dashboard = () => {
               View All Sprints
             </Button>
             <Button
+              onClick={() => navigate("/profile/settings")}
+              variant="outline"
+              className="gap-2 border-border/60 bg-muted/40 hover:bg-muted/60 h-9 text-sm"
+            >
+              Profile Settings
+            </Button>
+            <Button
               variant="ghost"
               size="sm"
               onClick={async () => {

@@ -12,6 +12,7 @@ import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
 import ConfirmEmailPage from "./pages/ConfirmEmailPage";
 import VerifyEmailPage from "./pages/VerifyEmailPage";
+import ProfileSettings from "./pages/ProfileSettings";
 import { AuthProvider } from "@/auth/AuthContext";
 import { ProtectedRoute } from "@/auth/ProtectedRoute";
 import { NetworkBackground } from "@/components/NetworkBackground";
@@ -56,6 +57,14 @@ const App = () => (
               element={
                 <ProtectedRoute>
                   <SprintsBoard />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/profile/settings"
+              element={
+                <ProtectedRoute>
+                  <ProfileSettings />
                 </ProtectedRoute>
               }
             />

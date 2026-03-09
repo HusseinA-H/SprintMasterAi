@@ -26,16 +26,15 @@ const parseFrontendOrigins = (value: string | undefined): string[] =>
         .filter(Boolean)
     : []
 
-// استخراج متغيرات البريد الإلكتروني
 const smtpUser = process.env.SMTP_USER?.trim()
 const smtpPass = process.env.SMTP_PASS?.trim()
 const fromEmail = process.env.FROM_EMAIL?.trim()
+const fromName = process.env.FROM_NAME?.trim() || 'SprintMaster AI'
 const hasSmtp = Boolean(smtpUser && smtpPass && fromEmail)
 
-// توحيد الروابط المسموح بها لمنع مشاكل CORS و CSRF
 const allowedOrigins = Array.from(
   new Set([
-    'https://sprintmaster-ai.vercel.app', // الدومين الصحيح الخاص بك
+    'https://sprintmasterai.vercel.app',
     ...parseFrontendOrigins(process.env.FRONTEND_ORIGIN),
     'http://localhost:8080',
   ]),
@@ -44,14 +43,11 @@ const allowedOrigins = Array.from(
 export default buildConfig({
   admin: {
     user: Users.slug,
-    autoLogin: true,
     importMap: {
       baseDir: path.resolve(dirname),
     },
   },
-  cookiePrefix: process.env.PAYLOAD_COOKIE_PREFIX || 'sprintmasterai',
-  
-  // تفعيل الروابط لـ CORS و CSRF معاً لضمان قبول طلبات التوثيق والإنشاء
+
   cors: allowedOrigins,
   csrf: allowedOrigins,
 
@@ -62,21 +58,22 @@ export default buildConfig({
   ...(hasSmtp
     ? {
         email: nodemailerAdapter({
-          defaultFromAddress: fromEmail || '',
-          defaultFromName: 'SprintMaster AI',
-          skipVerify: true, // تخطي التحقق المبدئي لتسريع عملية البناء
+          defaultFromAddress: fromEmail,
+          defaultFromName: fromName,
+          skipVerify: true,
           transportOptions: {
             host: 'smtp-relay.brevo.com',
             port: 587,
-            secure: false, // يجب أن تكون false لبورت 587 للعمل مع STARTTLS
-            connectionTimeout: 20000, // زيادة المهلة لتجنب ETIMEDOUT
-            greetingTimeout: 20000,
+            secure: false,
+            connectionTimeout: 15000,
+            greetingTimeout: 10000,
+            socketTimeout: 20000,
             auth: {
               user: smtpUser,
               pass: smtpPass,
             },
             tls: {
-              rejectUnauthorized: false, // تجاوز قيود Handshake في شبكة Railway
+              rejectUnauthorized: false,
             },
           },
         }),
@@ -91,10 +88,5 @@ export default buildConfig({
   }),
   sharp,
   plugins: [],
-  endpoints: [
-    generateSprintEndpoint, 
-    mySprintsEndpoint, 
-    regenerateSprintEndpoint, 
-    deleteSprintEndpoint
-  ],
+  endpoints: [generateSprintEndpoint, mySprintsEndpoint, regenerateSprintEndpoint, deleteSprintEndpoint],
 })
