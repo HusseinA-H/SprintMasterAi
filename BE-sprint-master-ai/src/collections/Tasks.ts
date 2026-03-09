@@ -1,5 +1,6 @@
 import type { CollectionConfig } from 'payload'
 import { tasksAccess } from '../access/tasksAccess'
+import { normalizeTaskInput } from '../utils/normalizeTaskInput'
 
 export const Tasks: CollectionConfig = {
   slug: 'tasks',
@@ -83,12 +84,7 @@ export const Tasks: CollectionConfig = {
   hooks: {
     beforeValidate: [
       async ({ data }) => {
-        // Backward compatibility: map legacy `order` field into `estimated` if provided.
-        const anyData = data as Record<string, unknown>
-        if (anyData && anyData.estimated == null && anyData.order != null) {
-          anyData.estimated = anyData.order
-        }
-        return data
+        return normalizeTaskInput(data)
       },
     ],
     beforeChange: [

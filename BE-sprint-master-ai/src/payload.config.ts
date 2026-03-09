@@ -14,50 +14,12 @@ import { generateSprintEndpoint } from './endpoints/generateSprint'
 import { mySprintsEndpoint } from './endpoints/mySprints'
 import { regenerateSprintEndpoint } from './endpoints/regenerateSprint'
 import { deleteSprintEndpoint } from './endpoints/deleteSprint'
+import { startupEnv } from './config/env'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
 
-const parseFrontendOrigins = (value: string | undefined): string[] =>
-  value
-    ? value
-        .split(',')
-        .map((origin) => origin.trim())
-        .filter(Boolean)
-    : []
-
-const smtpUser = process.env.SMTP_USER?.trim()
-const smtpPass = process.env.SMTP_PASS?.trim()
-const fromEmail = process.env.FROM_EMAIL?.trim()
-const fromName = process.env.FROM_NAME?.trim() || 'SprintMaster AI'
-const hasSmtp = Boolean(smtpUser && smtpPass && fromEmail)
-const databaseURLFromDatabaseUrl = process.env.DATABASE_URL?.trim()
-const databaseURLFromDatabaseUri = process.env.DATABASE_URI?.trim()
-const databaseURLFromMongodbUri = process.env.MONGODB_URI?.trim()
-const databaseURL =
-  databaseURLFromDatabaseUrl || databaseURLFromDatabaseUri || databaseURLFromMongodbUri || ''
-const databaseEnvSource = databaseURLFromDatabaseUrl
-  ? 'DATABASE_URL'
-  : databaseURLFromDatabaseUri
-    ? 'DATABASE_URI'
-    : databaseURLFromMongodbUri
-      ? 'MONGODB_URI'
-      : 'NONE'
-
-if (databaseEnvSource === 'NONE') {
-  console.warn('[Startup] No database env var found. Expected DATABASE_URL, DATABASE_URI, or MONGODB_URI.')
-} else {
-  console.info(`[Startup] Using MongoDB connection from ${databaseEnvSource}.`)
-}
-console.info(`[Startup] SMTP credentials configured: ${hasSmtp ? 'yes' : 'no'}.`)
-
-const allowedOrigins = Array.from(
-  new Set([
-    'https://sprintmasterai.vercel.app',
-    ...parseFrontendOrigins(process.env.FRONTEND_ORIGIN),
-    'http://localhost:8080',
-  ]),
-)
+const allowedOrigins = startupEnv.frontendOrigins
 
 export default buildConfig({
   admin: {
@@ -72,27 +34,26 @@ export default buildConfig({
 
   collections: [Users, Media, Sprints, Tasks],
   editor: lexicalEditor(),
-  secret: process.env.PAYLOAD_SECRET || '',
+  secret: startupEnv.payloadSecret,
 
-  ...(hasSmtp
+  ...(startupEnv.smtp.enabled
     ? {
         email: nodemailerAdapter({
-          defaultFromAddress: fromEmail,
-          defaultFromName: fromName,
-          skipVerify: true,
+          defaultFromAddress: startupEnv.smtp.fromEmail,
+          defaultFromName: startupEnv.smtp.fromName,
           transportOptions: {
-            host: 'smtp-relay.brevo.com',
-            port: 587,
-            secure: false,
-            connectionTimeout: 15000,
-            greetingTimeout: 10000,
-            socketTimeout: 20000,
+            host: startupEnv.smtp.host,
+            port: startupEnv.smtp.port,
+            secure: startupEnv.smtp.secure,
+            connectionTimeout: startupEnv.smtp.connectionTimeout,
+            greetingTimeout: startupEnv.smtp.greetingTimeout,
+            socketTimeout: startupEnv.smtp.socketTimeout,
             auth: {
-              user: smtpUser,
-              pass: smtpPass,
+              user: startupEnv.smtp.user,
+              pass: startupEnv.smtp.pass,
             },
             tls: {
-              rejectUnauthorized: false,
+              rejectUnauthorized: startupEnv.smtp.tlsRejectUnauthorized,
             },
           },
         }),
@@ -103,7 +64,7 @@ export default buildConfig({
     outputFile: path.resolve(dirname, 'payload-types.ts'),
   },
   db: mongooseAdapter({
-    url: databaseURL,
+    url: startupEnv.mongoUrl,
     connectOptions: {
       connectTimeoutMS: 15000,
       family: 4,

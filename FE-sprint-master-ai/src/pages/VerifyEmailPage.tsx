@@ -43,7 +43,7 @@ const VerifyEmailPage = () => {
         setErrorMsg("Network error — could not reach the server.");
         setStatus("error");
       });
-  }, []);
+  }, [navigate, searchParams]);
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-transparent">

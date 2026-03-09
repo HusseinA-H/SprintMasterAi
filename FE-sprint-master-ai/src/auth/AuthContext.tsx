@@ -3,7 +3,6 @@ import { api, type AuthUser } from "@/lib/api";
 
 type AuthContextValue = {
   user: AuthUser | null;
-  token: string | null;
   loading: boolean;
   login: (email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
@@ -14,22 +13,15 @@ const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<AuthUser | null>(null);
-  const [token, setToken] = useState<string | null>(() => api.getToken());
   const [loading, setLoading] = useState<boolean>(true);
 
   useEffect(() => {
     let mounted = true;
     const init = async () => {
       try {
-        const existingToken = api.getToken();
-        if (!existingToken) {
-          if (mounted) { setUser(null); setToken(null); }
-          return;
-        }
         const me = await api.me();
         if (mounted) {
           setUser(me);
-          setToken(me ? existingToken : null);
         }
       } finally {
         if (mounted) setLoading(false);
@@ -42,9 +34,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const login = async (email: string, password: string) => {
     setLoading(true);
     try {
-      const { token: newToken, user: loggedInUser } = await api.login(email, password);
+      const { user: loggedInUser } = await api.login(email, password);
       setUser(loggedInUser);
-      setToken(newToken);
     } finally {
       setLoading(false);
     }
@@ -55,7 +46,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       await api.logout();
       setUser(null);
-      setToken(null);
     } finally {
       setLoading(false);
     }
@@ -63,13 +53,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const refreshUser = async () => {
     const me = await api.me();
-    const currentToken = api.getToken();
     setUser(me);
-    setToken(me ? currentToken : null);
   };
 
   return (
-    <AuthContext.Provider value={{ user, token, loading, login, logout, refreshUser }}>
+    <AuthContext.Provider value={{ user, loading, login, logout, refreshUser }}>
       {children}
     </AuthContext.Provider>
   );

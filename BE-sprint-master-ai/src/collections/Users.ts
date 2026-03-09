@@ -1,4 +1,5 @@
-import { APIError, type Access, type CollectionConfig, type FieldAccess } from 'payload'
+import { APIError, type Access, type CollectionConfig, type FieldAccess, type PayloadRequest } from 'payload'
+import { startupEnv } from '../config/env'
 
 type UserShape = {
   id?: number | string
@@ -7,21 +8,10 @@ type UserShape = {
   isManualActivated?: boolean
 }
 
-const getFrontendOrigin = (): string => {
-  const raw = process.env.FRONTEND_ORIGIN
-  if (!raw) return 'http://localhost:8080'
-
-  const firstOrigin = raw
-    .split(',')
-    .map((origin) => origin.trim())
-    .find(Boolean)
-
-  return firstOrigin || 'http://localhost:8080'
-}
+const getFrontendOrigin = (): string => startupEnv.frontendOrigins[0] || 'http://localhost:8080'
 
 const isAdmin = (user: UserShape | null | undefined): boolean => user?.role === 'admin'
 
-// صلاحية تتيح للأدمن التحكم في الكل، وللمستخدم التحكم في نفسه فقط
 const ownerOrAdminAccess: Access = ({ id, req: { user } }) => {
   const currentUser = user as UserShape | null
   if (!currentUser) return false
@@ -54,6 +44,17 @@ const adminOnlyUpdate: FieldAccess = ({ req }) =>
   (req.user as { role?: string } | null)?.role === 'admin'
 
 const FRONTEND_ORIGIN = getFrontendOrigin()
+
+const shouldBootstrapFirstAdmin = async (req: PayloadRequest) => {
+  const usersCount = await req.payload.count({
+    collection: 'users',
+    req,
+    overrideAccess: true,
+    where: {},
+  })
+
+  return usersCount.totalDocs === 0
+}
 
 export const Users: CollectionConfig = {
   slug: 'users',
@@ -93,7 +94,6 @@ export const Users: CollectionConfig = {
     beforeLogin: [
       ({ user }) => {
         const typedUser = user as UserShape
-        // السماح بالدخول إذا كان مفعلاً بالإيميل OR مفعل يدوياً من الأدمن
         if (!typedUser._verified && !typedUser.isManualActivated) {
           throw new APIError('Please verify your email or wait for admin activation.', 403)
         }
@@ -101,23 +101,43 @@ export const Users: CollectionConfig = {
       },
     ],
     beforeChange: [
-      ({ data, req, operation }) => {
+      async ({ data, req, operation }) => {
         const typedData = data as UserShape
         const currentUser = req.user as UserShape | null
 
-        /**
-         * تعديل "الضربة القاضية":
-         * لو بنعمل Create ومفيش مستخدم حالي (يعني بنعمل First User من صفحة الأدمن)
-         * هنخليه Verified و Admin فوراً وبدون الحاجة لعمل count في الداتابيز
-         * ده بيحل مشكلة الـ Transaction Timeout والإيميل في نفس الوقت.
-         */
-        if (operation === 'create' && !currentUser) {
-          typedData._verified = true
-          typedData.role = 'admin'
-          typedData.isManualActivated = true
+        if (currentUser && !isAdmin(currentUser)) {
+          delete typedData.role
+          delete typedData.isManualActivated
         }
 
-        // منطق الـ Manual Activation: لو الأدمن فعل التشيك بوكس، خلي الـ _verified بـ true
+        if (operation !== 'create') {
+          if (typedData.isManualActivated && isAdmin(currentUser)) {
+            typedData._verified = true
+          }
+
+          return typedData
+        }
+
+        if (!currentUser) {
+          typedData.role = 'user'
+          typedData.isManualActivated = false
+
+          const isFirstUser = await shouldBootstrapFirstAdmin(req)
+          if (isFirstUser) {
+            // First-admin bootstrap is opt-in to avoid unauthenticated privilege escalation.
+            if (!startupEnv.auth.enableFirstAdminBootstrap) {
+              throw new APIError(
+                'First admin bootstrap is disabled. Set ENABLE_FIRST_ADMIN_BOOTSTRAP=true for one-time setup.',
+                403,
+              )
+            }
+
+            typedData.role = 'admin'
+            typedData._verified = true
+            typedData.isManualActivated = true
+          }
+        }
+
         if (typedData.isManualActivated && isAdmin(currentUser)) {
           typedData._verified = true
         }

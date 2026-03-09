@@ -1,12 +1,11 @@
 # To use this Dockerfile, you have to set `output: 'standalone'` in your next.config.mjs file.
 # From https://github.com/vercel/next.js/blob/canary/examples/with-docker/Dockerfile
 
-FROM node:22.17.0-alpine AS base
+FROM node:20.19.0-alpine AS base
 
 # Install dependencies only when needed
 FROM base AS deps
 # Check https://github.com/nodejs/docker-node/tree/b4117f9333da4138b03a546ec926ef50a31506c3#nodealpine to understand why libc6-compat might be needed.
-# تم إضافة أدوات بناء إضافية (python3, make, g++) لضمان عمل مكتبات الباك إند
 RUN apk add --no-cache libc6-compat python3 make g++
 WORKDIR /app
 
@@ -47,17 +46,13 @@ ENV NODE_ENV production
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
 
-# الحل: نتحقق من وجود المجلد قبل محاولة النسخ، أو ننشئ واحداً فارغاً لتجنب الخطأ
 COPY --from=builder /app/package.json ./package.json
 
-# إذا كان المجلد موجوداً سيتم نسخه، وإذا لم يكن موجوداً لن يفشل البناء
 COPY --from=builder /app/public* ./public/ 
 
-# إعداد صلاحيات الكاش
 RUN mkdir .next
 RUN chown nextjs:nodejs .next
 
-# نسخ ملفات الـ Standalone والـ Static
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 

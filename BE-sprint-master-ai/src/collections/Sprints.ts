@@ -2,6 +2,9 @@ import type { CollectionConfig } from 'payload'
 import { sprintsAccess } from '../access/sprintsAccess'
 
 const STATUS_OPTIONS = ['draft', 'generated', 'in-progress', 'done'] as const
+type UserWithSprintCount = {
+  sprintCount?: number | null
+}
 
 export const Sprints: CollectionConfig = {
   slug: 'sprints',
@@ -103,8 +106,8 @@ export const Sprints: CollectionConfig = {
             req,
           })
 
-          const current =
-            typeof (user as any).sprintCount === 'number' ? (user as any).sprintCount : 0
+          const typedUser = user as UserWithSprintCount
+          const current = typeof typedUser.sprintCount === 'number' ? typedUser.sprintCount : 0
           const next = delta >= 0 ? current + delta : Math.max(0, current + delta)
 
           await req.payload.update({
