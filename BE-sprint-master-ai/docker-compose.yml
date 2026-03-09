@@ -15,6 +15,9 @@ services:
       # - postgres
     env_file:
       - .env
+    environment:
+      PAYLOAD_SECRET: ${PAYLOAD_SECRET}
+      DATABASE_URL: ${DATABASE_URL}
 
   # Ensure your DATABASE_URL uses 'mongo' as the hostname ie. mongodb://mongo/my-db-name
   mongo:

@@ -1,9 +1,10 @@
 type StartupEnv = {
   nodeEnv: 'development' | 'test' | 'production'
   isProduction: boolean
+  isNextProductionBuild: boolean
   payloadSecret: string
   mongoUrl: string
-  mongoEnvSource: 'DATABASE_URL' | 'DATABASE_URI' | 'MONGODB_URI'
+  mongoEnvSource: 'DATABASE_URL' | 'DATABASE_URI' | 'MONGODB_URI' | 'NONE'
   frontendOrigins: string[]
   smtp: {
     enabled: boolean
@@ -44,7 +45,29 @@ const parseOrigins = (value: string | undefined): string[] =>
         .filter(Boolean)
     : []
 
-const getMongoUrl = (): Pick<StartupEnv, 'mongoUrl' | 'mongoEnvSource'> => {
+const isNextProductionBuild = (): boolean =>
+  process.env.NEXT_PHASE?.trim() === 'phase-production-build'
+
+const getPayloadSecret = (isProduction: boolean, isBuildPhase: boolean): string => {
+  const secret = process.env.PAYLOAD_SECRET?.trim()
+  if (secret) return secret
+
+  if (isProduction && !isBuildPhase) {
+    throw new Error('[Startup] PAYLOAD_SECRET is required in production runtime.')
+  }
+
+  if (isBuildPhase) {
+    console.warn('[Startup] PAYLOAD_SECRET missing during build. Using build-only placeholder.')
+    return '__BUILD_ONLY_PAYLOAD_SECRET_PLACEHOLDER__'
+  }
+
+  console.warn('[Startup] PAYLOAD_SECRET is missing in non-production. Using a dev-only fallback.')
+  return 'dev-only-payload-secret-change-me'
+}
+
+const getMongoConfig = (
+  isBuildPhase: boolean,
+): Pick<StartupEnv, 'mongoUrl' | 'mongoEnvSource'> => {
   const databaseUrl = process.env.DATABASE_URL?.trim()
   if (databaseUrl) return { mongoUrl: databaseUrl, mongoEnvSource: 'DATABASE_URL' }
 
@@ -54,24 +77,20 @@ const getMongoUrl = (): Pick<StartupEnv, 'mongoUrl' | 'mongoEnvSource'> => {
   const mongodbUri = process.env.MONGODB_URI?.trim()
   if (mongodbUri) return { mongoUrl: mongodbUri, mongoEnvSource: 'MONGODB_URI' }
 
+  if (isBuildPhase) {
+    console.warn('[Startup] MongoDB URL missing during build. Using build-only placeholder.')
+    return {
+      mongoUrl: 'mongodb://127.0.0.1:27017/build-placeholder',
+      mongoEnvSource: 'NONE',
+    }
+  }
+
   throw new Error(
     '[Startup] Missing MongoDB URL. Set one of DATABASE_URL, DATABASE_URI, or MONGODB_URI.',
   )
 }
 
-const getPayloadSecret = (isProduction: boolean): string => {
-  const secret = process.env.PAYLOAD_SECRET?.trim()
-  if (secret) return secret
-
-  if (isProduction) {
-    throw new Error('[Startup] PAYLOAD_SECRET is required in production.')
-  }
-
-  console.warn('[Startup] PAYLOAD_SECRET is missing. Using an unsafe dev-only fallback secret.')
-  return 'dev-only-payload-secret-change-me'
-}
-
-const getSmtpConfig = (): StartupEnv['smtp'] => {
+const getSmtpConfig = (isBuildPhase: boolean): StartupEnv['smtp'] => {
   const host = process.env.SMTP_HOST?.trim() || 'smtp-relay.brevo.com'
   const port = parseNumber(process.env.SMTP_PORT?.trim(), 587)
   const secure = parseBoolean(process.env.SMTP_SECURE?.trim(), false)
@@ -86,6 +105,26 @@ const getSmtpConfig = (): StartupEnv['smtp'] => {
   const enabled = Boolean(user && pass && fromEmail)
 
   if (!enabled && hasAnyEmailSetting) {
+    if (isBuildPhase) {
+      console.warn(
+        '[Startup] Incomplete SMTP config during build. Email adapter disabled for build phase.',
+      )
+      return {
+        enabled: false,
+        host,
+        port,
+        secure,
+        user: '',
+        pass: '',
+        fromEmail: '',
+        fromName,
+        tlsRejectUnauthorized: true,
+        connectionTimeout: 15000,
+        greetingTimeout: 10000,
+        socketTimeout: 20000,
+      }
+    }
+
     throw new Error(
       '[Startup] Incomplete SMTP config. SMTP_USER, SMTP_PASS, and FROM_EMAIL are required together.',
     )
@@ -110,8 +149,9 @@ const getSmtpConfig = (): StartupEnv['smtp'] => {
 const buildEnv = (): StartupEnv => {
   const nodeEnv = (process.env.NODE_ENV?.trim() || 'development') as StartupEnv['nodeEnv']
   const isProduction = nodeEnv === 'production'
-  const payloadSecret = getPayloadSecret(isProduction)
-  const { mongoUrl, mongoEnvSource } = getMongoUrl()
+  const buildPhase = isNextProductionBuild()
+  const payloadSecret = getPayloadSecret(isProduction, buildPhase)
+  const { mongoUrl, mongoEnvSource } = getMongoConfig(buildPhase)
   const frontendOrigins = Array.from(
     new Set([
       'https://sprintmasterai.vercel.app',
@@ -124,18 +164,22 @@ const buildEnv = (): StartupEnv => {
   const env: StartupEnv = {
     nodeEnv,
     isProduction,
+    isNextProductionBuild: buildPhase,
     payloadSecret,
     mongoUrl,
     mongoEnvSource,
     frontendOrigins,
-    smtp: getSmtpConfig(),
+    smtp: getSmtpConfig(buildPhase),
     auth: {
-      enableFirstAdminBootstrap: parseBoolean(process.env.ENABLE_FIRST_ADMIN_BOOTSTRAP?.trim(), false),
+      enableFirstAdminBootstrap: parseBoolean(
+        process.env.ENABLE_FIRST_ADMIN_BOOTSTRAP?.trim(),
+        false,
+      ),
     },
   }
 
-  console.info(`[Startup] MongoDB URL source: ${env.mongoEnvSource}.`)
-  console.info('[Startup] MongoDB URL configured: yes.')
+  console.info(`[Startup] Build phase: ${env.isNextProductionBuild ? 'production-build' : 'runtime'}.`)
+  console.info(`[Startup] MongoDB URL configured: ${env.mongoEnvSource === 'NONE' ? 'no' : 'yes'}.`)
   console.info(`[Startup] SMTP configured: ${env.smtp.enabled ? 'yes' : 'no'}.`)
   console.info(
     `[Startup] First-admin bootstrap enabled: ${env.auth.enableFirstAdminBootstrap ? 'yes' : 'no'}.`,

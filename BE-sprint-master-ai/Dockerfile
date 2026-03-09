@@ -22,6 +22,8 @@ RUN \
 # Rebuild the source code only when needed
 FROM base AS builder
 WORKDIR /app
+ARG PAYLOAD_SECRET
+ENV PAYLOAD_SECRET=$PAYLOAD_SECRET
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
@@ -42,6 +44,8 @@ FROM base AS runner
 WORKDIR /app
 
 ENV NODE_ENV production
+ARG PAYLOAD_SECRET
+ENV PAYLOAD_SECRET=$PAYLOAD_SECRET
 
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
