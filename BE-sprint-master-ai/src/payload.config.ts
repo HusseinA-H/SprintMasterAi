@@ -18,11 +18,26 @@ import { deleteSprintEndpoint } from './endpoints/deleteSprint'
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
 
+const parseFrontendOrigins = (value: string | undefined): string[] =>
+  value
+    ? value
+        .split(',')
+        .map((origin) => origin.trim())
+        .filter(Boolean)
+    : []
+
 // Email env extraction
 const smtpUser = process.env.SMTP_USER?.trim()
 const smtpPass = process.env.SMTP_PASS?.trim()
 const fromEmail = process.env.FROM_EMAIL?.trim()
 const hasSmtp = Boolean(smtpUser && smtpPass && fromEmail)
+const allowedOrigins = Array.from(
+  new Set([
+    'https://sprintmasterai.vercel.app',
+    ...parseFrontendOrigins(process.env.FRONTEND_ORIGIN),
+    'http://localhost:8080',
+  ]),
+)
 
 export default buildConfig({
   admin: {
@@ -32,17 +47,9 @@ export default buildConfig({
     },
   },
   
-  cors: [
-    'https://sprintmasterai.vercel.app',
-    process.env.FRONTEND_ORIGIN,
-    'http://localhost:8080',
-  ].filter(Boolean) as string[],
+  cors: allowedOrigins,
   
-  csrf: [
-    'https://sprintmasterai.vercel.app',
-    process.env.FRONTEND_ORIGIN,
-    'http://localhost:8080',
-  ].filter(Boolean) as string[],
+  csrf: allowedOrigins,
 
   collections: [Users, Media, Sprints, Tasks],
   editor: lexicalEditor(),
@@ -53,6 +60,7 @@ export default buildConfig({
         email: nodemailerAdapter({
           defaultFromAddress: fromEmail || '',
           defaultFromName: 'SprintMaster AI',
+          skipVerify: true,
           transportOptions: {
             host: 'smtp-relay.brevo.com',
             port: 587,
