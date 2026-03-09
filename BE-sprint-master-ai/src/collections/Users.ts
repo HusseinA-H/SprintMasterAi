@@ -11,6 +11,8 @@ type UserShape = {
 const getFrontendOrigin = (): string => startupEnv.frontendOrigins[0] || 'http://localhost:8080'
 
 const isAdmin = (user: UserShape | null | undefined): boolean => user?.role === 'admin'
+const BOOTSTRAP_DISABLED_ERROR = 'First-admin bootstrap is disabled in this environment.'
+const BOOTSTRAP_TOKEN_ERROR = 'First-admin bootstrap token is missing or invalid.'
 
 const ownerOrAdminAccess: Access = ({ id, req: { user } }) => {
   const currentUser = user as UserShape | null
@@ -40,21 +42,85 @@ const readAccess: Access = ({ req: { user } }) => {
   }
 }
 
-const adminOnlyUpdate: FieldAccess = ({ req }) =>
-  (req.user as { role?: string } | null)?.role === 'admin'
+const getRequestHeader = (req: PayloadRequest, key: string): string | undefined => {
+  const nodeHeaders = (req as unknown as { headers?: Record<string, string | string[] | undefined> })
+    .headers
+
+  if (!nodeHeaders) return undefined
+  const raw = nodeHeaders[key] ?? nodeHeaders[key.toLowerCase()]
+  if (Array.isArray(raw)) return raw[0]
+  return raw
+}
+
+const findAnyUser = async (req: PayloadRequest): Promise<UserShape | null> => {
+  const result = await req.payload.find({
+    collection: 'users',
+    depth: 0,
+    limit: 1,
+    overrideAccess: true,
+    pagination: false,
+    req,
+  })
+
+  return (result.docs[0] as UserShape | undefined) ?? null
+}
+
+const ensureFirstAdminBootstrapAllowed = async (req: PayloadRequest) => {
+  if (!startupEnv.auth.enableFirstAdminBootstrap) {
+    throw new APIError(
+      BOOTSTRAP_DISABLED_ERROR,
+      403,
+      {
+        code: 'FIRST_ADMIN_BOOTSTRAP_DISABLED',
+        hint: 'Set ENABLE_FIRST_ADMIN_BOOTSTRAP=true for one-time first-admin creation.',
+      },
+      true,
+    )
+  }
+
+  const requiredToken = startupEnv.auth.firstAdminBootstrapToken
+  if (!requiredToken) return
+
+  const providedToken = getRequestHeader(req, 'x-first-admin-bootstrap-token')
+  if (!providedToken || providedToken !== requiredToken) {
+    throw new APIError(
+      BOOTSTRAP_TOKEN_ERROR,
+      403,
+      {
+        code: 'FIRST_ADMIN_BOOTSTRAP_TOKEN_REQUIRED',
+        hint: 'Provide x-first-admin-bootstrap-token for first-admin creation.',
+      },
+      true,
+    )
+  }
+}
+
+const createAccess: Access = async ({ req }) => {
+  const currentUser = req.user as UserShape | null
+  if (currentUser) return true
+
+  const firstUser = await findAnyUser(req)
+  if (firstUser) return true
+
+  await ensureFirstAdminBootstrapAllowed(req)
+  return true
+}
+
+const adminOnlyUpdate: FieldAccess = async ({ req }) => {
+  const currentUser = req.user as UserShape | null
+  if (isAdmin(currentUser)) return true
+  if (currentUser) return false
+
+  const firstUser = await findAnyUser(req)
+  if (firstUser) return false
+
+  await ensureFirstAdminBootstrapAllowed(req)
+  return true
+}
 
 const FRONTEND_ORIGIN = getFrontendOrigin()
 
-const shouldBootstrapFirstAdmin = async (req: PayloadRequest) => {
-  const usersCount = await req.payload.count({
-    collection: 'users',
-    req,
-    overrideAccess: true,
-    where: {},
-  })
-
-  return usersCount.totalDocs === 0
-}
+const shouldBootstrapFirstAdmin = async (req: PayloadRequest) => !(await findAnyUser(req))
 
 export const Users: CollectionConfig = {
   slug: 'users',
@@ -85,7 +151,7 @@ export const Users: CollectionConfig = {
   },
   access: {
     admin: ({ req: { user } }) => isAdmin(user as UserShape | null),
-    create: () => true,
+    create: createAccess,
     read: readAccess,
     update: ownerOrAdminAccess,
     delete: ownerOrAdminAccess,
@@ -124,13 +190,7 @@ export const Users: CollectionConfig = {
 
           const isFirstUser = await shouldBootstrapFirstAdmin(req)
           if (isFirstUser) {
-            // First-admin bootstrap is opt-in to avoid unauthenticated privilege escalation.
-            if (!startupEnv.auth.enableFirstAdminBootstrap) {
-              throw new APIError(
-                'First admin bootstrap is disabled. Set ENABLE_FIRST_ADMIN_BOOTSTRAP=true for one-time setup.',
-                403,
-              )
-            }
+            await ensureFirstAdminBootstrapAllowed(req)
 
             typedData.role = 'admin'
             typedData._verified = true

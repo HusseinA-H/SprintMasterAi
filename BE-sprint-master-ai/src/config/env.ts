@@ -22,6 +22,7 @@ type StartupEnv = {
   }
   auth: {
     enableFirstAdminBootstrap: boolean
+    firstAdminBootstrapToken: string | null
   }
 }
 
@@ -175,6 +176,7 @@ const buildEnv = (): StartupEnv => {
         process.env.ENABLE_FIRST_ADMIN_BOOTSTRAP?.trim(),
         false,
       ),
+      firstAdminBootstrapToken: process.env.FIRST_ADMIN_BOOTSTRAP_TOKEN?.trim() || null,
     },
   }
 
@@ -183,6 +185,9 @@ const buildEnv = (): StartupEnv => {
   console.info(`[Startup] SMTP configured: ${env.smtp.enabled ? 'yes' : 'no'}.`)
   console.info(
     `[Startup] First-admin bootstrap enabled: ${env.auth.enableFirstAdminBootstrap ? 'yes' : 'no'}.`,
+  )
+  console.info(
+    `[Startup] First-admin bootstrap token required: ${env.auth.firstAdminBootstrapToken ? 'yes' : 'no'}.`,
   )
 
   return env
