@@ -18,9 +18,7 @@ import { deleteSprintEndpoint } from './endpoints/deleteSprint'
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
 
-// Only configure real email transport when all three SMTP vars are present.
-// If any are missing, omit `email` entirely — Payload will log emails to the
-// console instead of attempting a network connection.
+// إعدادات البريد الإلكتروني
 const smtpHost = process.env.SMTP_HOST?.trim()
 const smtpUser = process.env.SMTP_USER?.trim()
 const smtpPass = process.env.SMTP_PASS?.trim()
@@ -33,11 +31,22 @@ export default buildConfig({
       baseDir: path.resolve(dirname),
     },
   },
+  
+  // --- إعدادات الربط والأمان (CORS & CSRF) ---
+  // هذا الجزء هو المسؤول عن السماح لـ Vercel بالتواصل مع الباك إند
+  cors: [
+    process.env.FRONTEND_ORIGIN || 'http://localhost:8080',
+  ].filter(Boolean),
+  csrf: [
+    process.env.FRONTEND_ORIGIN || 'http://localhost:8080',
+  ].filter(Boolean),
+  // ------------------------------------------
+
   collections: [Users, Media, Sprints, Tasks],
   editor: lexicalEditor(),
   secret: process.env.PAYLOAD_SECRET || '',
 
-  // Email is conditionally included — absent when SMTP is not configured
+  // البريد الإلكتروني (اختياري)
   ...(hasSmtp
     ? {
         email: nodemailerAdapter({
@@ -61,5 +70,10 @@ export default buildConfig({
   }),
   sharp,
   plugins: [],
-  endpoints: [generateSprintEndpoint, mySprintsEndpoint, regenerateSprintEndpoint, deleteSprintEndpoint],
+  endpoints: [
+    generateSprintEndpoint, 
+    mySprintsEndpoint, 
+    regenerateSprintEndpoint, 
+    deleteSprintEndpoint
+  ],
 })
