@@ -57,6 +57,7 @@ export default buildConfig({
             host: 'smtp-relay.brevo.com',
             port: 587,
             secure: false,
+            connectionTimeout: 10000,
             auth: {
               user: smtpUser,
               pass: smtpPass,
