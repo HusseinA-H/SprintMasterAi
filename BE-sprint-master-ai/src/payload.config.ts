@@ -18,10 +18,11 @@ import { deleteSprintEndpoint } from './endpoints/deleteSprint'
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
 
-// إعدادات البريد الإلكتروني
+// إعدادات البريد الإلكتروني - تحسين استخراج المتغيرات
 const smtpHost = process.env.SMTP_HOST?.trim()
 const smtpUser = process.env.SMTP_USER?.trim()
 const smtpPass = process.env.SMTP_PASS?.trim()
+const smtpPort = parseInt(process.env.SMTP_PORT || '587', 10)
 const hasSmtp = Boolean(smtpHost && smtpUser && smtpPass)
 
 export default buildConfig({
@@ -33,30 +34,42 @@ export default buildConfig({
   },
   
   // --- إعدادات الربط والأمان (CORS & CSRF) ---
-  // هذا الجزء هو المسؤول عن السماح لـ Vercel بالتواصل مع الباك إند
   cors: [
-    process.env.FRONTEND_ORIGIN || 'http://localhost:8080',
-  ].filter(Boolean),
+    process.env.FRONTEND_ORIGIN,
+    'https://sprintmasterai.vercel.app', // دومين فيرسيل الأساسي للتأكيد
+    'http://localhost:8080',
+  ].filter(Boolean) as string[],
+  
   csrf: [
-    process.env.FRONTEND_ORIGIN || 'http://localhost:8080',
-  ].filter(Boolean),
+    process.env.FRONTEND_ORIGIN,
+    'https://sprintmasterai.vercel.app',
+    'http://localhost:8080',
+  ].filter(Boolean) as string[],
   // ------------------------------------------
 
   collections: [Users, Media, Sprints, Tasks],
   editor: lexicalEditor(),
   secret: process.env.PAYLOAD_SECRET || '',
 
-  // البريد الإلكتروني (اختياري)
+  // البريد الإلكتروني المحسن للعمل مع Brevo
   ...(hasSmtp
     ? {
         email: nodemailerAdapter({
-          defaultFromAddress: process.env.FROM_EMAIL || 'noreply@sprintmaster.app',
-          defaultFromName: 'SprintMaster',
+          defaultFromAddress: process.env.FROM_EMAIL || smtpUser || '', 
+          defaultFromName: 'SprintMaster AI',
           transportOptions: {
             host: smtpHost,
-            port: parseInt(process.env.SMTP_PORT || '587', 10),
-            secure: parseInt(process.env.SMTP_PORT || '587', 10) === 465,
-            auth: { user: smtpUser, pass: smtpPass },
+            port: smtpPort,
+            // Brevo يستخدم TLS مع بورت 587، لذا secure يجب أن تكون false
+            secure: smtpPort === 465, 
+            auth: {
+              user: smtpUser,
+              pass: smtpPass,
+            },
+            // إضافة لتحسين التوافق مع TLS
+            tls: {
+              rejectUnauthorized: false,
+            },
           },
         }),
       }
