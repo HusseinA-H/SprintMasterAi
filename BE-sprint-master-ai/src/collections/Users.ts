@@ -101,26 +101,23 @@ export const Users: CollectionConfig = {
       },
     ],
     beforeChange: [
-      async ({ data, req, operation }) => {
+      ({ data, req, operation }) => {
         const typedData = data as UserShape
         const currentUser = req.user as UserShape | null
 
-        // 1. منطق "أول أدمن": لو بنكريت أول مستخدم في السيستم، خليه verified فوراً
-        if (operation === 'create') {
-          const usersCount = await req.payload.count({
-            collection: 'users',
-            overrideAccess: true,
-            req,
-          })
-          
-          if (usersCount.totalDocs === 0) {
-            typedData._verified = true
-            typedData.role = 'admin'
-            typedData.isManualActivated = true
-          }
+        /**
+         * تعديل "الضربة القاضية":
+         * لو بنعمل Create ومفيش مستخدم حالي (يعني بنعمل First User من صفحة الأدمن)
+         * هنخليه Verified و Admin فوراً وبدون الحاجة لعمل count في الداتابيز
+         * ده بيحل مشكلة الـ Transaction Timeout والإيميل في نفس الوقت.
+         */
+        if (operation === 'create' && !currentUser) {
+          typedData._verified = true
+          typedData.role = 'admin'
+          typedData.isManualActivated = true
         }
 
-        // 2. منطق الـ Manual Activation: لو الأدمن فعل التشيك بوكس، خلي الـ _verified بـ true
+        // منطق الـ Manual Activation: لو الأدمن فعل التشيك بوكس، خلي الـ _verified بـ true
         if (typedData.isManualActivated && isAdmin(currentUser)) {
           typedData._verified = true
         }
