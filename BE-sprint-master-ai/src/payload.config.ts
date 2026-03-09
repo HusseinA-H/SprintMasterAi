@@ -31,6 +31,25 @@ const smtpPass = process.env.SMTP_PASS?.trim()
 const fromEmail = process.env.FROM_EMAIL?.trim()
 const fromName = process.env.FROM_NAME?.trim() || 'SprintMaster AI'
 const hasSmtp = Boolean(smtpUser && smtpPass && fromEmail)
+const databaseURLFromDatabaseUrl = process.env.DATABASE_URL?.trim()
+const databaseURLFromDatabaseUri = process.env.DATABASE_URI?.trim()
+const databaseURLFromMongodbUri = process.env.MONGODB_URI?.trim()
+const databaseURL =
+  databaseURLFromDatabaseUrl || databaseURLFromDatabaseUri || databaseURLFromMongodbUri || ''
+const databaseEnvSource = databaseURLFromDatabaseUrl
+  ? 'DATABASE_URL'
+  : databaseURLFromDatabaseUri
+    ? 'DATABASE_URI'
+    : databaseURLFromMongodbUri
+      ? 'MONGODB_URI'
+      : 'NONE'
+
+if (databaseEnvSource === 'NONE') {
+  console.warn('[Startup] No database env var found. Expected DATABASE_URL, DATABASE_URI, or MONGODB_URI.')
+} else {
+  console.info(`[Startup] Using MongoDB connection from ${databaseEnvSource}.`)
+}
+console.info(`[Startup] SMTP credentials configured: ${hasSmtp ? 'yes' : 'no'}.`)
 
 const allowedOrigins = Array.from(
   new Set([
@@ -84,7 +103,13 @@ export default buildConfig({
     outputFile: path.resolve(dirname, 'payload-types.ts'),
   },
   db: mongooseAdapter({
-    url: process.env.DATABASE_URL || '',
+    url: databaseURL,
+    connectOptions: {
+      connectTimeoutMS: 15000,
+      family: 4,
+      serverSelectionTimeoutMS: 15000,
+      socketTimeoutMS: 45000,
+    },
   }),
   sharp,
   plugins: [],
