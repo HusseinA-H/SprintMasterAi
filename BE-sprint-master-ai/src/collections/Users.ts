@@ -3,6 +3,8 @@ import { APIError, type Access, type CollectionConfig, type FieldAccess } from '
 type UserShape = {
   id?: number | string
   role?: string
+  _verified?: boolean
+  isManualActivated?: boolean
 }
 
 const getFrontendOrigin = (): string => {
@@ -19,6 +21,7 @@ const getFrontendOrigin = (): string => {
 
 const isAdmin = (user: UserShape | null | undefined): boolean => user?.role === 'admin'
 
+// صلاحية تتيح للأدمن التحكم في الكل، وللمستخدم التحكم في نفسه فقط
 const ownerOrAdminAccess: Access = ({ id, req: { user } }) => {
   const currentUser = user as UserShape | null
   if (!currentUser) return false
@@ -88,21 +91,34 @@ export const Users: CollectionConfig = {
   hooks: {
     beforeLogin: [
       ({ user }) => {
-        const typedUser = user as { _verified?: boolean; isManualActivated?: boolean }
+        const typedUser = user as UserShape
+        // السماح بالدخول إذا كان مفعلاً بالإيميل OR مفعل يدوياً من الأدمن
         if (!typedUser._verified && !typedUser.isManualActivated) {
           throw new APIError('Please verify your email or wait for admin activation.', 403)
         }
-
         return user
       },
     ],
     beforeChange: [
-      ({ data, req }) => {
-        const typedData = data as { _verified?: boolean; isManualActivated?: boolean } | undefined
+      async ({ data, req, operation }) => {
+        const typedData = data as UserShape
         const currentUser = req.user as UserShape | null
 
-        if (!typedData) return data
+        // 1. منطق "أول أدمن": لو بنكريت أول مستخدم في السيستم، خليه verified فوراً
+        if (operation === 'create') {
+          const usersCount = await req.payload.find({
+            collection: 'users',
+            limit: 0,
+          })
+          
+          if (usersCount.totalDocs === 0) {
+            typedData._verified = true
+            typedData.role = 'admin'
+            typedData.isManualActivated = true
+          }
+        }
 
+        // 2. منطق الـ Manual Activation: لو الأدمن فعل التشيك بوكس، خلي الـ _verified بـ true
         if (typedData.isManualActivated && isAdmin(currentUser)) {
           typedData._verified = true
         }
@@ -138,7 +154,6 @@ export const Users: CollectionConfig = {
               defaultValue: 'free',
               required: true,
               access: {
-                create: adminOnlyUpdate,
                 update: adminOnlyUpdate,
               },
             },
@@ -151,11 +166,7 @@ export const Users: CollectionConfig = {
               ],
               defaultValue: 'user',
               required: true,
-              admin: {
-                description: 'Admins have full access to all collections.',
-              },
               access: {
-                create: adminOnlyUpdate,
                 update: adminOnlyUpdate,
               },
             },
@@ -164,11 +175,9 @@ export const Users: CollectionConfig = {
               type: 'checkbox',
               defaultValue: false,
               admin: {
-                description:
-                  'Admin override: if enabled, this user can log in even if email verification was not completed.',
+                description: 'Admin override: if enabled, this user can log in even if email verification was not completed.',
               },
               access: {
-                create: adminOnlyUpdate,
                 update: adminOnlyUpdate,
               },
             },
@@ -181,46 +190,27 @@ export const Users: CollectionConfig = {
               name: 'sprintCount',
               type: 'number',
               defaultValue: 0,
-              admin: {
-                readOnly: true,
-                description: 'Total sprints created by this user (maintained automatically).',
-              },
-              access: {
-                update: adminOnlyUpdate,
-              },
+              admin: { readOnly: true },
+              access: { update: adminOnlyUpdate },
             },
             {
               name: 'monthlySprintUsageMonth',
               type: 'text',
-              admin: {
-                readOnly: true,
-                description: 'Current month key for free-plan usage tracking (YYYY-MM).',
-              },
-              access: {
-                update: adminOnlyUpdate,
-              },
+              admin: { readOnly: true },
+              access: { update: adminOnlyUpdate },
             },
             {
               name: 'monthlySprintUsageCount',
               type: 'number',
               defaultValue: 0,
-              admin: {
-                readOnly: true,
-                description:
-                  'Number of generated sprints in the tracked month. Not reduced by deletions.',
-              },
-              access: {
-                update: adminOnlyUpdate,
-              },
+              admin: { readOnly: true },
+              access: { update: adminOnlyUpdate },
             },
             {
               name: 'sprints',
               type: 'join',
               collection: 'sprints',
               on: 'createdBy',
-              admin: {
-                description: 'Sprints created by this user (two-way join with sprint.createdBy).',
-              },
             },
           ],
         },
