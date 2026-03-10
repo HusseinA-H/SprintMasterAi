@@ -1,6 +1,30 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from "react";
 import { api, type AuthUser } from "@/lib/api";
 
+const AUTH_USER_KEY = "sprint_master_auth_user";
+
+function loadStoredUser(): AuthUser | null {
+  try {
+    const raw = window.localStorage.getItem(AUTH_USER_KEY);
+    if (!raw) return null;
+    return JSON.parse(raw) as AuthUser;
+  } catch {
+    return null;
+  }
+}
+
+function storeUser(user: AuthUser | null): void {
+  try {
+    if (user) {
+      window.localStorage.setItem(AUTH_USER_KEY, JSON.stringify(user));
+    } else {
+      window.localStorage.removeItem(AUTH_USER_KEY);
+    }
+  } catch {
+    // ignore storage errors
+  }
+}
+
 type AuthContextValue = {
   user: AuthUser | null;
   loading: boolean;
@@ -12,7 +36,7 @@ type AuthContextValue = {
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<AuthUser | null>(null);
+  const [user, setUser] = useState<AuthUser | null>(() => loadStoredUser());
   const [loading, setLoading] = useState<boolean>(true);
 
   useEffect(() => {
@@ -22,6 +46,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const me = await api.me();
         if (mounted) {
           setUser(me);
+          storeUser(me);
         }
       } finally {
         if (mounted) setLoading(false);
@@ -36,6 +61,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       const { user: loggedInUser } = await api.login(email, password);
       setUser(loggedInUser);
+      storeUser(loggedInUser);
     } finally {
       setLoading(false);
     }
@@ -46,6 +72,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       await api.logout();
       setUser(null);
+      storeUser(null);
     } finally {
       setLoading(false);
     }
@@ -54,6 +81,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const refreshUser = async () => {
     const me = await api.me();
     setUser(me);
+    storeUser(me);
   };
 
   return (

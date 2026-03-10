@@ -3,6 +3,29 @@ const API_BASE_URL =
     ? import.meta.env.VITE_API_URL
     : 'http://localhost:3000'
 
+const AUTH_TOKEN_KEY = 'sprint_master_auth_token'
+
+function getStoredToken(): string | null {
+  try {
+    const token = window.localStorage.getItem(AUTH_TOKEN_KEY)
+    return token && token.trim() ? token : null
+  } catch {
+    return null
+  }
+}
+
+function setStoredToken(token: string | null): void {
+  try {
+    if (token && token.trim()) {
+      window.localStorage.setItem(AUTH_TOKEN_KEY, token)
+    } else {
+      window.localStorage.removeItem(AUTH_TOKEN_KEY)
+    }
+  } catch {
+    // ignore storage access errors
+  }
+}
+
 export type AuthUser = {
   id: string
   email: string
@@ -36,8 +59,7 @@ export type Sprint = {
 }
 
 export type UsageSummary = {
-  month: string
-  monthlyCreated: number
+  attemptsUsed: number
   limit: number
   isPro: boolean
 }
@@ -65,8 +87,10 @@ type MySprintsResponse = {
 
 async function request<T>(path: string, options: RequestInit & { auth?: boolean } = {}): Promise<T> {
   const url = `${API_BASE_URL}${path}`
+  const token = options.auth ? getStoredToken() : null
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
+    ...(token ? { Authorization: `JWT ${token}` } : {}),
     ...((options.headers as Record<string, string>) || {}),
   }
 
@@ -108,10 +132,12 @@ export const api = {
   },
 
   async login(email: string, password: string): Promise<LoginResponse> {
-    return request<LoginResponse>('/api/users/login', {
+    const result = await request<LoginResponse>('/api/users/login', {
       method: 'POST',
       body: JSON.stringify({ email, password }),
     })
+    setStoredToken(typeof result.token === 'string' ? result.token : null)
+    return result
   },
 
   async register(input: RegisterInput): Promise<void> {
@@ -130,9 +156,14 @@ export const api = {
     try {
       const data = await request<{ user?: AuthUser }>('/api/users/me', {
         method: 'GET',
+        auth: true,
       })
       return data.user ?? null
-    } catch {
+    } catch (error) {
+      const err = error as Error & { status?: number }
+      if (err.status === 401) {
+        setStoredToken(null)
+      }
       return null
     }
   },
@@ -141,9 +172,12 @@ export const api = {
     try {
       await request<void>('/api/users/logout', {
         method: 'POST',
+        auth: true,
       })
     } catch {
       // ignore
+    } finally {
+      setStoredToken(null)
     }
   },
 

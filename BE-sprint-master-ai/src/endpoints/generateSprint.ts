@@ -6,20 +6,16 @@ import { createSprintFromPlan, generatePlan, type PlanMode } from './sprintGener
 type UserDoc = {
   id: string
   subscription?: 'free' | 'pro'
-  monthlySprintUsageMonth?: string | null
-  monthlySprintUsageCount?: number | null
+  generationAttempts?: number | null
+  sprintCount?: number | null
 }
 
-const FREE_MONTHLY_LIMIT = 3
+const FREE_GENERATION_LIMIT = 3
 
-function getMonthKey(now = new Date()): string {
-  const month = `${now.getMonth() + 1}`.padStart(2, '0')
-  return `${now.getFullYear()}-${month}`
-}
-
-function getUsageForCurrentMonth(user: UserDoc, currentMonth: string): number {
-  if (user.monthlySprintUsageMonth !== currentMonth) return 0
-  return typeof user.monthlySprintUsageCount === 'number' ? user.monthlySprintUsageCount : 0
+function getGenerationAttempts(user: UserDoc): number {
+  if (typeof user.generationAttempts === 'number') return user.generationAttempts
+  if (typeof user.sprintCount === 'number') return user.sprintCount
+  return 0
 }
 
 export const generateSprintEndpoint: Endpoint = {
@@ -56,10 +52,9 @@ export const generateSprintEndpoint: Endpoint = {
     })) as unknown as UserDoc
 
     const mode: PlanMode = user.subscription === 'pro' ? 'pro' : 'free'
-    const monthKey = getMonthKey()
-    const usageThisMonth = getUsageForCurrentMonth(user, monthKey)
+    const attemptsUsed = getGenerationAttempts(user)
 
-    if (mode === 'free' && usageThisMonth >= FREE_MONTHLY_LIMIT) {
+    if (mode === 'free' && attemptsUsed >= FREE_GENERATION_LIMIT) {
       throw new APIError('Sprint limit reached. Upgrade to Pro for unlimited sprints.', 403)
     }
 
@@ -80,8 +75,7 @@ export const generateSprintEndpoint: Endpoint = {
       collection: 'users',
       id: req.user.id,
       data: {
-        monthlySprintUsageMonth: monthKey,
-        monthlySprintUsageCount: usageThisMonth + 1,
+        generationAttempts: attemptsUsed + 1,
       },
       req,
       overrideAccess: true,
@@ -90,4 +84,3 @@ export const generateSprintEndpoint: Endpoint = {
     return Response.json(sprintResponse)
   },
 }
-

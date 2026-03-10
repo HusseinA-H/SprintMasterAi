@@ -146,11 +146,15 @@ export interface User {
    */
   sprintCount?: number | null;
   /**
-   * Current month key for free-plan usage tracking (YYYY-MM).
+   * Total successful sprint generation attempts used for free-plan limits.
+   */
+  generationAttempts?: number | null;
+  /**
+   * Legacy monthly usage field (kept for compatibility).
    */
   monthlySprintUsageMonth?: string | null;
   /**
-   * Number of generated sprints in the tracked month. Not reduced by deletions.
+   * Legacy monthly usage count field (kept for compatibility).
    */
   monthlySprintUsageCount?: number | null;
   /**
@@ -392,6 +396,7 @@ export interface UsersSelect<T extends boolean = true> {
   subscription?: T;
   role?: T;
   sprintCount?: T;
+  generationAttempts?: T;
   monthlySprintUsageMonth?: T;
   monthlySprintUsageCount?: T;
   sprints?: T;

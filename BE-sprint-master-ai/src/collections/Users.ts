@@ -9,7 +9,7 @@ export const Users: CollectionConfig = {
   slug: 'users',
   admin: {
     useAsTitle: 'email',
-    defaultColumns: ['email', 'firstName', 'lastName', 'subscription', 'sprintCount'],
+    defaultColumns: ['email', 'firstName', 'lastName', 'subscription', 'generationAttempts', 'sprintCount'],
   },
   auth: {
     // Require email verification before login is allowed
@@ -100,11 +100,23 @@ export const Users: CollectionConfig = {
               },
             },
             {
+              name: 'generationAttempts',
+              type: 'number',
+              defaultValue: 0,
+              admin: {
+                readOnly: true,
+                description: 'Total successful sprint generation attempts used for free-plan limits.',
+              },
+              access: {
+                update: adminOnlyUpdate,
+              },
+            },
+            {
               name: 'monthlySprintUsageMonth',
               type: 'text',
               admin: {
                 readOnly: true,
-                description: 'Current month key for free-plan usage tracking (YYYY-MM).',
+                description: 'Legacy monthly usage field (kept for compatibility).',
               },
               access: {
                 update: adminOnlyUpdate,
@@ -116,8 +128,7 @@ export const Users: CollectionConfig = {
               defaultValue: 0,
               admin: {
                 readOnly: true,
-                description:
-                  'Number of generated sprints in the tracked month. Not reduced by deletions.',
+                description: 'Legacy monthly usage count field (kept for compatibility).',
               },
               access: {
                 update: adminOnlyUpdate,

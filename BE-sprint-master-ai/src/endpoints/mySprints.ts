@@ -30,13 +30,14 @@ interface SprintDoc {
 
 interface UserUsageDoc {
   subscription?: 'free' | 'pro'
-  monthlySprintUsageMonth?: string | null
-  monthlySprintUsageCount?: number | null
+  generationAttempts?: number | null
+  sprintCount?: number | null
 }
 
-function getMonthKey(now = new Date()): string {
-  const month = `${now.getMonth() + 1}`.padStart(2, '0')
-  return `${now.getFullYear()}-${month}`
+function getGenerationAttempts(user: UserUsageDoc): number {
+  if (typeof user.generationAttempts === 'number') return user.generationAttempts
+  if (typeof user.sprintCount === 'number') return user.sprintCount
+  return 0
 }
 
 /** GET /api/my-sprints — returns all sprints belonging to the authenticated user.
@@ -78,13 +79,7 @@ export const mySprintsEndpoint: Endpoint = {
       overrideAccess: false,
     })) as unknown as UserUsageDoc
 
-    const currentMonth = getMonthKey()
-    const usageThisMonth =
-      userDoc.monthlySprintUsageMonth === currentMonth
-        ? typeof userDoc.monthlySprintUsageCount === 'number'
-          ? userDoc.monthlySprintUsageCount
-          : 0
-        : 0
+    const attemptsUsed = getGenerationAttempts(userDoc)
     const isPro = userDoc.subscription === 'pro'
 
     // Flatten each sprint's subtask join into a simple array
@@ -120,8 +115,7 @@ export const mySprintsEndpoint: Endpoint = {
     return Response.json({
       sprints,
       usage: {
-        month: currentMonth,
-        monthlyCreated: usageThisMonth,
+        attemptsUsed,
         limit: 3,
         isPro,
       },

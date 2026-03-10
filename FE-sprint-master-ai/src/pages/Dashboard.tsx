@@ -20,10 +20,10 @@ import {
 
 // ── Sub-components ────────────────────────────────────────────────────────────
 
-function PlanBanner({ user, sprintCount, limit }: { user: { subscription?: string } | null; sprintCount: number; limit: number }) {
+function PlanBanner({ user, attemptsUsed, limit }: { user: { subscription?: string } | null; attemptsUsed: number; limit: number }) {
   const isPro = user?.subscription === "pro";
-  const remaining = Math.max(0, limit - sprintCount);
-  const atLimit = !isPro && sprintCount >= limit;
+  const remaining = Math.max(0, limit - attemptsUsed);
+  const atLimit = !isPro && attemptsUsed >= limit;
 
   if (isPro) {
     return (
@@ -36,7 +36,7 @@ function PlanBanner({ user, sprintCount, limit }: { user: { subscription?: strin
   return (
     <div className={`flex items-center gap-2 text-xs px-3 py-1.5 rounded-full ${atLimit ? "text-red-400 bg-red-500/10" : "text-muted-foreground bg-muted/60"}`}>
       {atLimit ? <ThinLockIcon size={14} /> : <ThinBoltIcon size={14} />}
-      {atLimit ? "Limit reached — upgrade to Pro" : `Free plan — ${remaining}/${limit} sprints left this month`}
+      {atLimit ? "Limit reached — upgrade to Pro" : `Free plan — ${remaining}/${limit} generation attempts left`}
     </div>
   );
 }
@@ -109,7 +109,7 @@ function GoalInput({
             <span>{error}</span>
           )}
           {limitError && (
-            <span className="text-xs text-muted-foreground">(One-day planner, 3 free/month)</span>
+            <span className="text-xs text-muted-foreground">(One-day planner, 3 free attempts)</span>
           )}
         </div>
       )}
@@ -227,7 +227,7 @@ const Dashboard = () => {
             </div>
           </div>
           <div className="flex items-center gap-3">
-            <PlanBanner user={user} sprintCount={usage.monthlyCreated} limit={usage.limit} />
+            <PlanBanner user={user} attemptsUsed={usage.attemptsUsed} limit={usage.limit} />
             <Button
               onClick={() => navigate("/sprints")}
               variant="outline"

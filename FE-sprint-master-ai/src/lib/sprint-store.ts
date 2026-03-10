@@ -32,8 +32,7 @@ export const useSprintStore = create<SprintStore>((set, get) => ({
   isLoading: false,
   totalDocs: 0,
   usage: {
-    month: "",
-    monthlyCreated: 0,
+    attemptsUsed: 0,
     limit: 3,
     isPro: false,
   },
@@ -68,7 +67,7 @@ export const useSprintStore = create<SprintStore>((set, get) => ({
         ? state.usage
         : {
             ...state.usage,
-            monthlyCreated: state.usage.monthlyCreated + 1,
+            attemptsUsed: state.usage.attemptsUsed + 1,
           },
     })),
 
@@ -137,7 +136,7 @@ export const useSprintStore = create<SprintStore>((set, get) => ({
         ? state.usage
         : {
             ...state.usage,
-            monthlyCreated: state.usage.monthlyCreated + 1,
+            attemptsUsed: state.usage.attemptsUsed + 1,
           },
     }));
     return sprint;
