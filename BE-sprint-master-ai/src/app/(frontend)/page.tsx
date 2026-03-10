@@ -7,11 +7,23 @@ import { fileURLToPath } from 'url'
 import config from '@/payload.config'
 import './styles.css'
 
+export const dynamic = 'force-dynamic'
+
 export default async function HomePage() {
-  const headers = await getHeaders()
   const payloadConfig = await config
-  const payload = await getPayload({ config: payloadConfig })
-  const { user } = await payload.auth({ headers })
+  const adminRoute = payloadConfig.routes?.admin || '/admin'
+  let userEmail: string | null = null
+  let authUnavailable = false
+
+  try {
+    const headers = await getHeaders()
+    const payload = await getPayload({ config: payloadConfig })
+    const { user } = await payload.auth({ headers })
+    userEmail = user?.email ?? null
+  } catch (error) {
+    authUnavailable = true
+    console.error('Failed to initialize payload auth on homepage:', error)
+  }
 
   const fileURL = `vscode://file/${fileURLToPath(import.meta.url)}`
 
@@ -27,12 +39,18 @@ export default async function HomePage() {
             width={65}
           />
         </picture>
-        {!user && <h1>Welcome to your new project.</h1>}
-        {user && <h1>Welcome back, {user.email}</h1>}
+        {!userEmail && <h1>Welcome to your new project.</h1>}
+        {userEmail && <h1>Welcome back, {userEmail}</h1>}
+        {authUnavailable && (
+          <p style={{ marginTop: 12 }}>
+            Auth is temporarily unavailable. Check `DATABASE_URL`/`PAYLOAD_SECRET` and database
+            connectivity.
+          </p>
+        )}
         <div className="links">
           <a
             className="admin"
-            href={payloadConfig.routes.admin}
+            href={adminRoute}
             rel="noopener noreferrer"
             target="_blank"
           >
