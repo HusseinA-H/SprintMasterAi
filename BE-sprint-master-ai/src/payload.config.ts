@@ -14,12 +14,17 @@ import { generateSprintEndpoint } from './endpoints/generateSprint'
 import { mySprintsEndpoint } from './endpoints/mySprints'
 import { regenerateSprintEndpoint } from './endpoints/regenerateSprint'
 import { deleteSprintEndpoint } from './endpoints/deleteSprint'
-import { startupEnv } from './config/env'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
 
-const allowedOrigins = startupEnv.frontendOrigins
+// Only configure real email transport when all three SMTP vars are present.
+// If any are missing, omit `email` entirely — Payload will log emails to the
+// console instead of attempting a network connection.
+const smtpHost = process.env.SMTP_HOST?.trim()
+const smtpUser = process.env.SMTP_USER?.trim()
+const smtpPass = process.env.SMTP_PASS?.trim()
+const hasSmtp = Boolean(smtpHost && smtpUser && smtpPass)
 
 export default buildConfig({
   admin: {
@@ -28,33 +33,21 @@ export default buildConfig({
       baseDir: path.resolve(dirname),
     },
   },
-
-  cors: allowedOrigins,
-  csrf: allowedOrigins,
-
   collections: [Users, Media, Sprints, Tasks],
   editor: lexicalEditor(),
-  secret: startupEnv.payloadSecret,
+  secret: process.env.PAYLOAD_SECRET || '',
 
-  ...(startupEnv.smtp.enabled
+  // Email is conditionally included — absent when SMTP is not configured
+  ...(hasSmtp
     ? {
         email: nodemailerAdapter({
-          defaultFromAddress: startupEnv.smtp.fromEmail,
-          defaultFromName: startupEnv.smtp.fromName,
+          defaultFromAddress: process.env.FROM_EMAIL || 'noreply@sprintmaster.app',
+          defaultFromName: 'SprintMaster',
           transportOptions: {
-            host: startupEnv.smtp.host,
-            port: startupEnv.smtp.port,
-            secure: startupEnv.smtp.secure,
-            connectionTimeout: startupEnv.smtp.connectionTimeout,
-            greetingTimeout: startupEnv.smtp.greetingTimeout,
-            socketTimeout: startupEnv.smtp.socketTimeout,
-            auth: {
-              user: startupEnv.smtp.user,
-              pass: startupEnv.smtp.pass,
-            },
-            tls: {
-              rejectUnauthorized: startupEnv.smtp.tlsRejectUnauthorized,
-            },
+            host: smtpHost,
+            port: parseInt(process.env.SMTP_PORT || '587', 10),
+            secure: parseInt(process.env.SMTP_PORT || '587', 10) === 465,
+            auth: { user: smtpUser, pass: smtpPass },
           },
         }),
       }
@@ -64,13 +57,7 @@ export default buildConfig({
     outputFile: path.resolve(dirname, 'payload-types.ts'),
   },
   db: mongooseAdapter({
-    url: startupEnv.mongoUrl,
-    connectOptions: {
-      connectTimeoutMS: 15000,
-      family: 4,
-      serverSelectionTimeoutMS: 15000,
-      socketTimeoutMS: 45000,
-    },
+    url: process.env.DATABASE_URL || '',
   }),
   sharp,
   plugins: [],

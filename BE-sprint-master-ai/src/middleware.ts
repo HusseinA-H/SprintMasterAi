@@ -1,22 +1,17 @@
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 
-const parseOrigins = (value: string | undefined): string[] =>
-  value
-    ? value
-        .split(',')
-        .map((origin) => origin.trim())
-        .filter(Boolean)
-    : []
+const DEFAULT_ORIGINS = ['http://localhost:8080', 'http://localhost:5173']
 
-const ALLOWED_ORIGINS = Array.from(
-  new Set([
-    'https://sprintmasterai.vercel.app',
-    ...parseOrigins(process.env.FRONTEND_ORIGIN),
-    'http://localhost:8080',
-    'http://localhost:5173',
-  ]),
-)
+const ALLOWED_ORIGINS = (() => {
+  const raw = process.env.FRONTEND_ORIGIN
+  if (!raw) return DEFAULT_ORIGINS
+  const parsed = raw
+    .split(',')
+    .map((o) => o.trim())
+    .filter(Boolean)
+  return parsed.length > 0 ? parsed : DEFAULT_ORIGINS
+})()
 
 export function middleware(request: NextRequest) {
   if (!request.nextUrl.pathname.startsWith('/api')) {

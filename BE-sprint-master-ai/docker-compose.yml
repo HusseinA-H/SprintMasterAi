@@ -2,7 +2,7 @@ version: '3'
 
 services:
   payload:
-    image: node:20-alpine
+    image: node:18-alpine
     ports:
       - '3000:3000'
     volumes:
@@ -15,11 +15,6 @@ services:
       # - postgres
     env_file:
       - .env
-    environment:
-      PAYLOAD_SECRET: ${PAYLOAD_SECRET}
-      DATABASE_URL: ${DATABASE_URL}
-      ENABLE_FIRST_ADMIN_BOOTSTRAP: ${ENABLE_FIRST_ADMIN_BOOTSTRAP}
-      FIRST_ADMIN_BOOTSTRAP_TOKEN: ${FIRST_ADMIN_BOOTSTRAP_TOKEN}
 
   # Ensure your DATABASE_URL uses 'mongo' as the hostname ie. mongodb://mongo/my-db-name
   mongo:

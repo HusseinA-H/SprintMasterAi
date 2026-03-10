@@ -7,7 +7,6 @@ export const testUser = {
   firstName: 'Dev',
   lastName: 'User',
   subscription: 'free' as const,
-  role: 'user' as const,
 }
 
 /**
@@ -30,7 +29,6 @@ export async function seedTestUser(): Promise<void> {
   await payload.create({
     collection: 'users',
     data: testUser,
-    draft: false,
   })
 }
 

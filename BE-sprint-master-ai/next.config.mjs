@@ -2,11 +2,11 @@ import { withPayload } from '@payloadcms/next/withPayload'
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  output: 'standalone',
-
   transpilePackages: [
     '@payloadcms/ui',
     '@payloadcms/richtext-lexical',
+    // لو احتجت كمان:
+    // '@payloadcms/next',
   ],
 
   webpack: (webpackConfig) => {
