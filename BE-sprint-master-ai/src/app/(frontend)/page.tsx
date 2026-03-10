@@ -10,12 +10,13 @@ import './styles.css'
 export const dynamic = 'force-dynamic'
 
 export default async function HomePage() {
-  const payloadConfig = await config
-  const adminRoute = payloadConfig.routes?.admin || '/admin'
+  let adminRoute = '/admin'
   let userEmail: string | null = null
   let authUnavailable = false
 
   try {
+    const payloadConfig = await config
+    adminRoute = payloadConfig.routes?.admin || '/admin'
     const headers = await getHeaders()
     const payload = await getPayload({ config: payloadConfig })
     const { user } = await payload.auth({ headers })
