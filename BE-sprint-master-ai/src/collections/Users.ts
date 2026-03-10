@@ -119,6 +119,8 @@ const adminOnlyUpdate: FieldAccess = async ({ req }) => {
 const FRONTEND_ORIGIN = getFrontendOrigin()
 
 const shouldBootstrapFirstAdmin = async (req: PayloadRequest) => !(await findAnyUser(req))
+const showWhenAuthenticated = (_data: unknown, _sibling: unknown, { user }: { user: unknown }) =>
+  Boolean(user)
 
 export const Users: CollectionConfig = {
   slug: 'users',
@@ -222,6 +224,7 @@ export const Users: CollectionConfig = {
       admin: {
         className: 'sm-users-section',
         description: 'Email, Change Password, and Force Unlock are available in this document view.',
+        condition: showWhenAuthenticated,
         initCollapsed: false,
       },
       fields: [
@@ -259,18 +262,19 @@ export const Users: CollectionConfig = {
       label: 'Profile',
       admin: {
         className: 'sm-users-section',
+        condition: showWhenAuthenticated,
         initCollapsed: false,
       },
       fields: [
         {
           name: 'firstName',
           type: 'text',
-          required: true,
+          required: false,
         },
         {
           name: 'lastName',
           type: 'text',
-          required: true,
+          required: false,
         },
       ],
     },
@@ -279,6 +283,7 @@ export const Users: CollectionConfig = {
       label: 'Plan',
       admin: {
         className: 'sm-users-section',
+        condition: showWhenAuthenticated,
         initCollapsed: false,
       },
       fields: [
@@ -323,6 +328,7 @@ export const Users: CollectionConfig = {
       label: 'Relations',
       admin: {
         className: 'sm-users-section',
+        condition: showWhenAuthenticated,
         initCollapsed: false,
       },
       fields: [

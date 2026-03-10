@@ -27,17 +27,6 @@ export default buildConfig({
     importMap: {
       baseDir: path.resolve(dirname),
     },
-    components: {
-      views: {
-        createFirstUser: {
-          path: '/create-first-user',
-          Component: {
-            path: 'src/admin/views/CreateFirstUserPage.tsx',
-            exportName: 'CreateFirstUserPage',
-          },
-        },
-      },
-    },
   },
 
   cors: allowedOrigins,
