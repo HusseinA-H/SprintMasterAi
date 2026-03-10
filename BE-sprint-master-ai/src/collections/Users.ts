@@ -95,15 +95,14 @@ const ensureFirstAdminBootstrapAllowed = async (req: PayloadRequest) => {
   }
 }
 
-const createAccess: Access = async ({ req }) => {
-  const currentUser = req.user as UserShape | null
-  if (currentUser) return true
+const isBootstrapAllowedForRequest = (req: PayloadRequest): boolean => {
+  if (!startupEnv.auth.enableFirstAdminBootstrap) return false
 
-  const firstUser = await findAnyUser(req)
-  if (firstUser) return true
+  const requiredToken = startupEnv.auth.firstAdminBootstrapToken
+  if (!requiredToken) return true
 
-  await ensureFirstAdminBootstrapAllowed(req)
-  return true
+  const providedToken = getRequestHeader(req, 'x-first-admin-bootstrap-token')
+  return Boolean(providedToken && providedToken === requiredToken)
 }
 
 const adminOnlyUpdate: FieldAccess = async ({ req }) => {
@@ -114,8 +113,7 @@ const adminOnlyUpdate: FieldAccess = async ({ req }) => {
   const firstUser = await findAnyUser(req)
   if (firstUser) return false
 
-  await ensureFirstAdminBootstrapAllowed(req)
-  return true
+  return isBootstrapAllowedForRequest(req)
 }
 
 const FRONTEND_ORIGIN = getFrontendOrigin()
@@ -161,7 +159,8 @@ export const Users: CollectionConfig = {
   },
   access: {
     admin: ({ req: { user } }) => isAdmin(user as UserShape | null),
-    create: createAccess,
+    // Keep public registration enabled. First-admin security is enforced in beforeChange.
+    create: () => true,
     read: readAccess,
     update: ownerOrAdminAccess,
     delete: ownerOrAdminAccess,

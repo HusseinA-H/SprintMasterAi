@@ -184,7 +184,13 @@ const buildEnv = (): StartupEnv => {
   console.info(`[Startup] MongoDB URL configured: ${env.mongoEnvSource === 'NONE' ? 'no' : 'yes'}.`)
   console.info(`[Startup] SMTP configured: ${env.smtp.enabled ? 'yes' : 'no'}.`)
   console.info(
+    `[Startup] ENABLE_FIRST_ADMIN_BOOTSTRAP raw value: ${process.env.ENABLE_FIRST_ADMIN_BOOTSTRAP?.trim() || 'unset'}.`,
+  )
+  console.info(
     `[Startup] First-admin bootstrap enabled: ${env.auth.enableFirstAdminBootstrap ? 'yes' : 'no'}.`,
+  )
+  console.info(
+    `[Startup] FIRST_ADMIN_BOOTSTRAP_TOKEN configured: ${process.env.FIRST_ADMIN_BOOTSTRAP_TOKEN?.trim() ? 'yes' : 'no'}.`,
   )
   console.info(
     `[Startup] First-admin bootstrap token required: ${env.auth.firstAdminBootstrapToken ? 'yes' : 'no'}.`,
