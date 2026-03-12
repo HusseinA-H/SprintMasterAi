@@ -1,7 +1,39 @@
-import type { CollectionConfig } from 'payload'
+import type { CollectionConfig, PayloadRequest } from 'payload'
 import { sprintsAccess } from '../access/sprintsAccess'
 
 const STATUS_OPTIONS = ['draft', 'generated', 'in-progress', 'done'] as const
+
+function getUserId(createdBy: unknown): string | undefined {
+  if (!createdBy) return undefined
+  if (typeof createdBy === 'string') return createdBy
+  if (typeof createdBy === 'object' && (createdBy as { id?: string }).id) {
+    return (createdBy as { id?: string }).id
+  }
+  return undefined
+}
+
+async function syncSprintCountForUser(params: {
+  userId: string
+  req: PayloadRequest
+}): Promise<void> {
+  const { userId, req } = params
+  const result = await req.payload.find({
+    collection: 'sprints',
+    where: { createdBy: { equals: userId } },
+    limit: 1,
+    depth: 0,
+    overrideAccess: false,
+    req,
+  })
+
+  await req.payload.update({
+    collection: 'users',
+    id: userId,
+    data: { sprintCount: result.totalDocs },
+    overrideAccess: false,
+    req,
+  })
+}
 
 export const Sprints: CollectionConfig = {
   slug: 'sprints',
@@ -85,41 +117,10 @@ export const Sprints: CollectionConfig = {
     ],
     afterChange: [
       async ({ doc, previousDoc, operation, req }) => {
-        const getUserId = (createdBy: unknown): string | undefined => {
-          if (!createdBy) return undefined
-          if (typeof createdBy === 'string') return createdBy
-          if (typeof createdBy === 'object' && (createdBy as { id?: string }).id) {
-            return (createdBy as { id?: string }).id
-          }
-          return undefined
-        }
-
-        const adjustSprintCount = async (userId: string, delta: number) => {
-          const user = await req.payload.findByID({
-            collection: 'users',
-            id: userId,
-            depth: 0,
-            overrideAccess: false,
-            req,
-          })
-
-          const current =
-            typeof (user as any).sprintCount === 'number' ? (user as any).sprintCount : 0
-          const next = delta >= 0 ? current + delta : Math.max(0, current + delta)
-
-          await req.payload.update({
-            collection: 'users',
-            id: userId,
-            data: { sprintCount: next },
-            overrideAccess: false,
-            req,
-          })
-        }
-
         if (operation === 'create') {
           const userId = getUserId(doc.createdBy)
           if (userId) {
-            await adjustSprintCount(userId, 1)
+            await syncSprintCountForUser({ userId, req })
           }
         }
 
@@ -129,14 +130,26 @@ export const Sprints: CollectionConfig = {
 
           if (newUserId !== prevUserId) {
             if (prevUserId) {
-              await adjustSprintCount(prevUserId, -1)
+              await syncSprintCountForUser({ userId: prevUserId, req })
             }
             if (newUserId) {
-              await adjustSprintCount(newUserId, 1)
+              await syncSprintCountForUser({ userId: newUserId, req })
             }
+          } else if (newUserId) {
+            // Keep counters self-healing even if historical values drifted.
+            await syncSprintCountForUser({ userId: newUserId, req })
           }
         }
 
+        return doc
+      },
+    ],
+    afterDelete: [
+      async ({ doc, req }) => {
+        const userId = getUserId(doc.createdBy)
+        if (userId) {
+          await syncSprintCountForUser({ userId, req })
+        }
         return doc
       },
     ],

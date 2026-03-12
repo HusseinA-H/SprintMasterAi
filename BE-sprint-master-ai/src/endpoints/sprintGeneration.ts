@@ -283,45 +283,86 @@ export async function createSprintFromPlan(
   req: PayloadRequest,
   plan: PlannedSprint,
 ): Promise<Record<string, unknown>> {
-  const sprint = await req.payload.create({
-    collection: 'sprints',
-    data: {
-      title: plan.title,
-      description: plan.description,
-      goal: plan.goal,
-      status: 'generated',
-      estimatedHours: plan.estimatedHours,
-      acceptanceCriteria: plan.acceptanceCriteria,
-      risks: plan.risks,
-      createdBy: req.user!.id,
-    },
-    req,
-    overrideAccess: false,
-  })
+  let sprintId: string | undefined
+  const createdTaskIds: string[] = []
 
-  for (let i = 0; i < plan.subtasks.length; i++) {
-    const task = plan.subtasks[i]
-    await req.payload.create({
-      collection: 'tasks',
+  try {
+    const sprint = await req.payload.create({
+      collection: 'sprints',
       data: {
-        title: task.title,
-        description: task.description,
-        duration: task.duration,
-        completed: false,
-        priority: task.priority,
-        dependsOn: task.dependsOn,
-        estimated: i + 1,
-        sprint: sprint.id,
+        title: plan.title,
+        description: plan.description,
+        goal: plan.goal,
+        status: 'generated',
+        estimatedHours: plan.estimatedHours,
+        acceptanceCriteria: plan.acceptanceCriteria,
+        risks: plan.risks,
         createdBy: req.user!.id,
       },
       req,
       overrideAccess: false,
     })
+
+    sprintId = sprint.id
+
+    for (let i = 0; i < plan.subtasks.length; i++) {
+      const task = plan.subtasks[i]
+      const createdTask = await req.payload.create({
+        collection: 'tasks',
+        data: {
+          title: task.title,
+          description: task.description,
+          duration: task.duration,
+          completed: false,
+          priority: task.priority,
+          dependsOn: task.dependsOn,
+          estimated: i + 1,
+          sprint: sprint.id,
+          createdBy: req.user!.id,
+        },
+        req,
+        overrideAccess: false,
+      })
+      createdTaskIds.push(createdTask.id)
+    }
+  } catch (error) {
+    // Best-effort rollback to avoid partial sprint/task data.
+    for (const taskId of createdTaskIds) {
+      try {
+        await req.payload.delete({
+          collection: 'tasks',
+          id: taskId,
+          req,
+          overrideAccess: true,
+        })
+      } catch {
+        // ignore cleanup errors
+      }
+    }
+
+    if (sprintId) {
+      try {
+        await req.payload.delete({
+          collection: 'sprints',
+          id: sprintId,
+          req,
+          overrideAccess: true,
+        })
+      } catch {
+        // ignore cleanup errors
+      }
+    }
+
+    throw error
+  }
+
+  if (!sprintId) {
+    throw new APIError('Failed to create sprint', 500)
   }
 
   const sprintWithTasks = (await req.payload.findByID({
     collection: 'sprints',
-    id: sprint.id,
+    id: sprintId,
     depth: 1,
     req,
     overrideAccess: false,
@@ -358,4 +399,3 @@ export async function createSprintFromPlan(
     subtasks: flatSubtasks,
   }
 }
-

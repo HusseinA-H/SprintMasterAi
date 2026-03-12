@@ -206,6 +206,7 @@ export const api = {
   async deleteAccount(userId: string): Promise<void> {
     await request<void>(`/api/users/${userId}`, {
       method: 'DELETE',
+      auth: true,
     })
   },
 
