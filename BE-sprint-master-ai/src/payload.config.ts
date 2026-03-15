@@ -1,5 +1,4 @@
 import { mongooseAdapter } from '@payloadcms/db-mongodb'
-import { nodemailerAdapter } from '@payloadcms/email-nodemailer'
 import { lexicalEditor } from '@payloadcms/richtext-lexical'
 import path from 'path'
 import { buildConfig } from 'payload'
@@ -14,17 +13,12 @@ import { generateSprintEndpoint } from './endpoints/generateSprint'
 import { mySprintsEndpoint } from './endpoints/mySprints'
 import { regenerateSprintEndpoint } from './endpoints/regenerateSprint'
 import { deleteSprintEndpoint } from './endpoints/deleteSprint'
+import { resendAdapter } from './lib/email/resendAdapter'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
 
-// Only configure real email transport when all three SMTP vars are present.
-// If any are missing, omit `email` entirely — Payload will log emails to the
-// console instead of attempting a network connection.
-const smtpHost = process.env.SMTP_HOST?.trim()
-const smtpUser = process.env.SMTP_USER?.trim()
-const smtpPass = process.env.SMTP_PASS?.trim()
-const hasSmtp = Boolean(smtpHost && smtpUser && smtpPass)
+const hasResend = Boolean(process.env.RESEND_API_KEY?.trim())
 
 export default buildConfig({
   admin: {
@@ -37,19 +31,10 @@ export default buildConfig({
   editor: lexicalEditor(),
   secret: process.env.PAYLOAD_SECRET || '',
 
-  // Email is conditionally included — absent when SMTP is not configured
-  ...(hasSmtp
+  // When Resend is not configured, Payload falls back to logging emails in development.
+  ...(hasResend
     ? {
-        email: nodemailerAdapter({
-          defaultFromAddress: process.env.FROM_EMAIL || 'noreply@sprintmaster.app',
-          defaultFromName: 'SprintMaster',
-          transportOptions: {
-            host: smtpHost,
-            port: parseInt(process.env.SMTP_PORT || '587', 10),
-            secure: parseInt(process.env.SMTP_PORT || '587', 10) === 465,
-            auth: { user: smtpUser, pass: smtpPass },
-          },
-        }),
+        email: resendAdapter(),
       }
     : {}),
 

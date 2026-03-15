@@ -1,7 +1,10 @@
 import type { CollectionConfig, FieldAccess } from 'payload'
 import { usersAccess } from '../access/usersAccess'
+import { getVerificationEmailHtml, getVerificationEmailSubject } from '@/lib/email/sendVerificationEmail'
 
-const FRONTEND_ORIGIN = process.env.FRONTEND_ORIGIN || 'http://localhost:8080'
+const FRONTEND_ORIGIN =
+  process.env.FRONTEND_ORIGIN?.split(',').map((origin) => origin.trim()).filter(Boolean)[0] ||
+  'http://localhost:8080'
 const adminOnlyUpdate: FieldAccess = ({ req }) =>
   (req.user as { role?: string } | null)?.role === 'admin'
 
@@ -16,23 +19,12 @@ export const Users: CollectionConfig = {
     verify: {
       generateEmailHTML: ({ token, user }) => {
         const verifyUrl = `${FRONTEND_ORIGIN}/verify-email?token=${token}`
-        const name = (user as { firstName?: string }).firstName || 'there'
-        return `
-          <div style="font-family:sans-serif;max-width:520px;margin:0 auto;">
-            <h2 style="color:#7c3aed;">Welcome to SprintMaster, ${name}! 👋</h2>
-            <p>Click the button below to verify your email address and activate your account.</p>
-            <a href="${verifyUrl}"
-               style="display:inline-block;background:#7c3aed;color:#fff;padding:12px 28px;border-radius:8px;text-decoration:none;font-weight:600;margin:16px 0;">
-              Verify Email Address
-            </a>
-            <p style="color:#666;font-size:13px;">Or copy this link into your browser:<br/>
-              <code style="word-break:break-all;">${verifyUrl}</code>
-            </p>
-            <p style="color:#999;font-size:12px;">If you did not create an account, you can safely ignore this email.</p>
-          </div>
-        `
+        return getVerificationEmailHtml({
+          name: (user as { firstName?: string | null }).firstName,
+          verifyUrl,
+        })
       },
-      generateEmailSubject: () => 'Verify your SprintMaster account',
+      generateEmailSubject: () => getVerificationEmailSubject(),
     },
   },
   access: usersAccess,
