@@ -21,7 +21,8 @@ const getResend = () => {
   return new Resend(apiKey)
 }
 
-export const getVerificationEmailSubject = () => 'Verify your SprintMaster account'
+export const getVerificationEmailSubject = () =>
+  'Verify your email and activate SprintMaster'
 
 export const getVerificationEmailText = ({
   name,
@@ -54,11 +55,11 @@ export const getVerificationEmailHtml = ({
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Verify your SprintMaster account</title>
+    <title>Verify your email and activate SprintMaster</title>
   </head>
   <body style="margin:0;padding:0;background-color:#020817;">
     <div style="display:none;max-height:0;overflow:hidden;opacity:0;color:transparent;">
-      Verify your SprintMaster account and activate your workspace.
+      Verify your email and activate SprintMaster in seconds.
     </div>
 
     <table
@@ -70,27 +71,27 @@ export const getVerificationEmailHtml = ({
       style="width:100%;border-collapse:collapse;background-color:#020817;margin:0;padding:0;"
     >
       <tr>
-        <td align="center" style="padding:36px 16px;">
+        <td align="center" style="padding:32px 14px;">
           <table
             role="presentation"
             cellpadding="0"
             cellspacing="0"
             border="0"
             width="100%"
-            style="max-width:640px;border-collapse:collapse;"
+            style="max-width:680px;border-collapse:collapse;"
           >
             <tr>
               <td
                 style="
                   background:
-                    radial-gradient(circle at 20% 0%, rgba(59,130,246,0.18) 0%, rgba(2,8,23,0) 35%),
-                    radial-gradient(circle at 80% 10%, rgba(14,165,233,0.12) 0%, rgba(2,8,23,0) 25%),
+                    radial-gradient(circle at 20% 0%, rgba(59,130,246,0.18) 0%, rgba(2,8,23,0) 34%),
+                    radial-gradient(circle at 80% 10%, rgba(14,165,233,0.12) 0%, rgba(2,8,23,0) 22%),
                     linear-gradient(180deg, #071224 0%, #020817 100%);
                   background-color:#071224;
                   border:1px solid #13233d;
-                  border-radius:28px;
-                  box-shadow:0 24px 60px rgba(0,0,0,0.45);
+                  border-radius:30px;
                   overflow:hidden;
+                  box-shadow:0 24px 60px rgba(0,0,0,0.45);
                 "
               >
                 <table
@@ -102,35 +103,55 @@ export const getVerificationEmailHtml = ({
                   style="border-collapse:collapse;"
                 >
                   <tr>
-                    <td align="center" style="padding:34px 32px 12px 32px;">
+                    <td align="center" style="padding:18px 24px 0 24px;">
                       <div
                         style="
-                          font-family:Arial,sans-serif;
-                          font-size:15px;
-                          line-height:15px;
-                          color:#7dd3fc;
-                          background-color:#0b1b31;
-                          border:1px solid #173457;
-                          border-radius:999px;
-                          padding:10px 16px;
-                          display:inline-block;
+                          height:1px;
+                          background:linear-gradient(90deg, rgba(125,211,252,0) 0%, rgba(125,211,252,0.18) 50%, rgba(125,211,252,0) 100%);
                         "
-                      >
-                        AI-Powered Sprint Planning
-                      </div>
+                      ></div>
                     </td>
                   </tr>
 
                   <tr>
-                    <td align="center" style="padding:8px 32px 0 32px;">
+                    <td align="center" style="padding:26px 32px 10px 32px;">
+                      <table
+                        role="presentation"
+                        cellpadding="0"
+                        cellspacing="0"
+                        border="0"
+                        style="border-collapse:separate;"
+                      >
+                        <tr>
+                          <td
+                            style="
+                              background-color:#0a1830;
+                              border:1px solid #173456;
+                              border-radius:999px;
+                              padding:10px 16px;
+                              font-family:Arial,sans-serif;
+                              font-size:13px;
+                              line-height:13px;
+                              color:#7dd3fc;
+                            "
+                          >
+                            ✦ AI-Powered Sprint Planning
+                          </td>
+                        </tr>
+                      </table>
+                    </td>
+                  </tr>
+
+                  <tr>
+                    <td align="center" style="padding:2px 32px 0 32px;">
                       <div
                         style="
                           font-family:Arial,sans-serif;
-                          font-size:20px;
-                          line-height:28px;
-                          font-weight:700;
+                          font-size:22px;
+                          line-height:30px;
+                          font-weight:800;
                           color:#ffffff;
-                          margin-bottom:12px;
+                          letter-spacing:-0.4px;
                         "
                       >
                         SprintMaster AI
@@ -139,46 +160,47 @@ export const getVerificationEmailHtml = ({
                   </tr>
 
                   <tr>
-                    <td align="center" style="padding:0 32px 12px 32px;">
+                    <td align="center" style="padding:10px 32px 0 32px;">
                       <div
                         style="
                           font-family:Arial,sans-serif;
-                          font-size:48px;
-                          line-height:56px;
+                          font-size:54px;
+                          line-height:62px;
                           font-weight:800;
                           color:#f8fafc;
-                          letter-spacing:-1.5px;
+                          letter-spacing:-1.8px;
                           text-align:center;
                         "
                       >
-                        Verify Your Email
+                        Activate Your Account
                         <span style="color:#38bdf8;">In Seconds</span>
                       </div>
                     </td>
                   </tr>
 
                   <tr>
-                    <td align="center" style="padding:0 32px 12px 32px;">
+                    <td align="center" style="padding:18px 32px 0 32px;">
                       <div
                         style="
-                          max-width:520px;
+                          max-width:540px;
                           margin:0 auto;
                           font-family:Arial,sans-serif;
                           font-size:18px;
-                          line-height:30px;
+                          line-height:31px;
                           color:#94a3b8;
                           text-align:center;
                         "
                       >
-                        Welcome, <span style="color:#ffffff;font-weight:700;">${safeName}</span>.
-                        Your account is almost ready. Confirm your email to activate SprintMaster
-                        and start planning focused work faster.
+                        Welcome,
+                        <span style="color:#ffffff;font-weight:700;">${safeName}</span>.
+                        Your account is almost ready. Verify your email to unlock faster,
+                        smarter sprint planning for your workflow.
                       </div>
                     </td>
                   </tr>
 
                   <tr>
-                    <td align="center" style="padding:26px 32px 34px 32px;">
+                    <td align="center" style="padding:30px 32px 36px 32px;">
                       <table
                         role="presentation"
                         cellpadding="0"
@@ -192,8 +214,8 @@ export const getVerificationEmailHtml = ({
                             bgcolor="#38bdf8"
                             style="
                               background-color:#38bdf8;
-                              border-radius:14px;
-                              box-shadow:0 12px 28px rgba(56,189,248,0.30);
+                              border-radius:16px;
+                              box-shadow:0 14px 34px rgba(56,189,248,0.34);
                             "
                           >
                             <a
@@ -205,13 +227,12 @@ export const getVerificationEmailHtml = ({
                                 font-family:Arial,sans-serif;
                                 font-size:18px;
                                 line-height:18px;
-                                font-weight:700;
+                                font-weight:800;
                                 color:#ffffff;
                                 text-decoration:none;
                                 padding:18px 34px;
-                                border-radius:14px;
-                                background:
-                                  linear-gradient(180deg, #55c8ff 0%, #38bdf8 100%);
+                                border-radius:16px;
+                                background:linear-gradient(180deg, #59caff 0%, #38bdf8 100%);
                                 background-color:#38bdf8;
                               "
                             >
@@ -234,13 +255,60 @@ export const getVerificationEmailHtml = ({
                         style="
                           width:100%;
                           border-collapse:collapse;
-                          background-color:#0a1325;
+                          background-color:#091427;
                           border:1px solid #182946;
-                          border-radius:18px;
+                          border-radius:20px;
                         "
                       >
                         <tr>
-                          <td style="padding:20px 20px 18px 20px;">
+                          <td style="padding:20px 22px;">
+                            <div
+                              style="
+                                font-family:Arial,sans-serif;
+                                font-size:18px;
+                                line-height:25px;
+                                font-weight:700;
+                                color:#ffffff;
+                                margin-bottom:10px;
+                              "
+                            >
+                              Why verify your email?
+                            </div>
+
+                            <div
+                              style="
+                                font-family:Arial,sans-serif;
+                                font-size:14px;
+                                line-height:25px;
+                                color:#a8b3c7;
+                              "
+                            >
+                              Verifying your email secures your account and activates your full SprintMaster workspace experience.
+                            </div>
+                          </td>
+                        </tr>
+                      </table>
+                    </td>
+                  </tr>
+
+                  <tr>
+                    <td style="padding:0 32px 18px 32px;">
+                      <table
+                        role="presentation"
+                        cellpadding="0"
+                        cellspacing="0"
+                        border="0"
+                        width="100%"
+                        style="
+                          width:100%;
+                          border-collapse:collapse;
+                          background-color:#0a1325;
+                          border:1px solid #182946;
+                          border-radius:20px;
+                        "
+                      >
+                        <tr>
+                          <td style="padding:20px 22px;">
                             <div
                               style="
                                 font-family:Arial,sans-serif;
@@ -284,7 +352,7 @@ export const getVerificationEmailHtml = ({
                   </tr>
 
                   <tr>
-                    <td style="padding:8px 32px 18px 32px;">
+                    <td style="padding:0 32px 20px 32px;">
                       <table
                         role="presentation"
                         cellpadding="0"
@@ -296,13 +364,13 @@ export const getVerificationEmailHtml = ({
                           border-collapse:collapse;
                           background-color:#07192a;
                           border:1px solid #123a62;
-                          border-radius:18px;
+                          border-radius:20px;
                         "
                       >
                         <tr>
                           <td
                             style="
-                              padding:18px 20px;
+                              padding:18px 22px;
                               font-family:Arial,sans-serif;
                               font-size:14px;
                               line-height:25px;
@@ -319,7 +387,7 @@ export const getVerificationEmailHtml = ({
                   </tr>
 
                   <tr>
-                    <td align="center" style="padding:4px 32px 30px 32px;">
+                    <td align="center" style="padding:6px 32px 30px 32px;">
                       <div
                         style="
                           font-family:Arial,sans-serif;
