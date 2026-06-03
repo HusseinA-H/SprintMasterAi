@@ -14,7 +14,7 @@
 
 
 
-<img src="https://readme-typing-svg.demolab.com?font=Fira+Code&size=24&pause=1000&color=2563EB&width=450&lines=Plan+one-day+sprints;AI-powered+productivity;Ship+faster+every+day" alt="Typing SVG" />
+  <img src="https://readme-typing-svg.demolab.com?font=Fira+Code&size=24&pause=1000&color=2563EB&width=450&lines=Plan+one-day+sprints;AI-powered+productivity;Ship+faster+every+day" alt="Typing SVG" />
 
 <p align="center">
   <strong>Empower teams and individuals to translate ambitious multi-domain goals into strictly executable one-day sprints with optimized, AI-generated subtasks.</strong>
