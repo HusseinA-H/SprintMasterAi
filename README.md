@@ -4,6 +4,9 @@
 
 <img src="FE-sprint-master-ai/public/logo.png" alt="SprintMaster AI Logo" width="160" height="auto" />
 
+[![React Version](https://img.shields.io/badge/React-19.0-61dafb?style=for-the-badge&logo=react)](https://react.dev)
+  <img src="https://img.shields.io/badge/Next.js-15-black?style=for-the-badge&logo=next.js&logoColor=white" alt="Next.js 15" />
+
 [![Static Badge](https://img.shields.io/badge/Powered_by-Groq_AI-2563EB?logo=groq&logoColor=white&style=for-the-badge)](https://groq.com)
 [![Static Badge](https://img.shields.io/badge/CMS-Payload_3.0-FF5C00?logo=payloadcms&logoColor=white&style=for-the-badge)](https://payloadcms.com)
 [![Static Badge](https://img.shields.io/badge/Database-MongoDB-47A248?logo=mongodb&logoColor=white&style=for-the-badge)](https://www.mongodb.com)
