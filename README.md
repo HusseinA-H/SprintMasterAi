@@ -8,6 +8,12 @@
 [![Static Badge](https://img.shields.io/badge/CMS-Payload_3.0-FF5C00?logo=payloadcms&logoColor=white&style=for-the-badge)](https://payloadcms.com)
 [![Static Badge](https://img.shields.io/badge/Database-MongoDB-47A248?logo=mongodb&logoColor=white&style=for-the-badge)](https://www.mongodb.com)
 
+[![MIT License](https://img.shields.io/github/license/HusseinIslamEagle/SprintMasterAi?style=flat-square&color=blue)](LICENSE)
+[![GitHub release (latest by date)](https://img.shields.io/github/v/release/HusseinIslamEagle/SprintMasterAi?style=flat-square&color=emerald)](https://github.com/HusseinIslamEagle/SprintMasterAi/releases)
+[![Build Status](https://img.shields.io/github/actions/workflow/status/HusseinIslamEagle/SprintMasterAi/main.yml?branch=main&style=flat-square&label=build)](https://github.com/HusseinIslamEagle/SprintMasterAi/actions)
+![Visitor Counter](https://img.shields.io/badge/dynamic/json?color=blueviolet&label=visitors&query=value&url=https%3A%2F%2Fapi.countapi.xyz%2Fhit%2FHusseinIslamEagle%2FSprintMasterAi%2Fvisits&style=flat-square)
+
+
 
 <img src="https://readme-typing-svg.demolab.com?font=Fira+Code&size=24&pause=1000&color=2563EB&width=450&lines=Plan+one-day+sprints;AI-powered+productivity;Ship+faster+every+day" alt="Typing SVG" />
 
