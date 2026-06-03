@@ -1,0 +1,1972 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SprintMaster AI - Premium SaaS Presentation</title>
+  <!-- Google Fonts & Tailwind-like CSS variables -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  
+  <style>
+    :root {
+      --bg-dark: #020617;
+      --bg-card: rgba(15, 23, 42, 0.45);
+      --bg-hover: rgba(30, 41, 59, 0.6);
+      --border-color: rgba(255, 255, 255, 0.08);
+      --border-glow: rgba(59, 130, 246, 0.35);
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      
+      --color-primary: #3b82f6;
+      --color-accent: #8b5cf6;
+      --color-cyan: #06b6d4;
+      --color-success: #10b981;
+      --color-warning: #f59e0b;
+      --color-destructive: #ef4444;
+      
+      --gradient-main: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 50%, #06b6d4 100%);
+      --gradient-dark: radial-gradient(circle at 50% 0%, #0b1329 0%, #020617 100%);
+      --shadow-bento: 0 0 50px -15px rgba(59, 130, 246, 0.25);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      background: var(--bg-dark);
+      background-image: var(--gradient-dark);
+      color: var(--text-main);
+      overflow: hidden;
+      height: 100vh;
+      display: flex;
+      user-select: none;
+    }
+
+    /* Presentation Layout */
+    .presentation-container {
+      display: flex;
+      width: 100vw;
+      height: 100vh;
+      position: relative;
+    }
+
+    /* Interactive Sidebar Index */
+    .sidebar {
+      width: 320px;
+      background: rgba(11, 15, 25, 0.85);
+      backdrop-filter: blur(25px);
+      border-right: 1px solid var(--border-color);
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      z-index: 100;
+      transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    
+    .sidebar-header {
+      padding: 24px;
+      border-b: 1px solid var(--border-color);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    
+    .sidebar-header img {
+      height: 32px;
+      width: auto;
+    }
+
+    .sidebar-logo-text {
+      font-weight: 800;
+      font-size: 18px;
+      letter-spacing: -0.8px;
+      background: var(--gradient-main);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .sidebar-scroll {
+      flex: 1;
+      overflow-y: auto;
+      padding: 16px;
+    }
+
+    .sidebar-scroll::-webkit-scrollbar {
+      width: 4px;
+    }
+    
+    .sidebar-scroll::-webkit-scrollbar-thumb {
+      background: var(--border-color);
+      border-radius: 99px;
+    }
+
+    .index-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 14px;
+      border-radius: 10px;
+      color: var(--text-muted);
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 500;
+      transition: all 0.2s ease;
+      margin-bottom: 4px;
+    }
+
+    .index-item:hover {
+      background: rgba(255, 255, 255, 0.03);
+      color: var(--text-main);
+    }
+
+    .index-item.active {
+      background: rgba(59, 130, 246, 0.15);
+      border: 1px solid rgba(59, 130, 246, 0.3);
+      color: var(--text-main);
+    }
+
+    .index-number {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      color: var(--color-primary);
+      width: 22px;
+    }
+
+    /* Main Stage Area */
+    .slide-stage {
+      flex: 1;
+      height: 100%;
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Slides Container */
+    .slides-wrapper {
+      flex: 1;
+      position: relative;
+      width: 100%;
+      height: 100%;
+    }
+
+    .slide {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      opacity: 0;
+      visibility: hidden;
+      transform: scale(0.97) translateY(10px);
+      transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+      padding: 50px 60px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    .slide.active {
+      opacity: 1;
+      visibility: visible;
+      transform: scale(1) translateY(0);
+      z-index: 10;
+    }
+
+    /* Slide Footer Controls */
+    .slide-footer {
+      height: 70px;
+      border-top: 1px solid var(--border-color);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 40px;
+      background: rgba(2, 6, 23, 0.6);
+      backdrop-filter: blur(10px);
+      z-index: 50;
+    }
+
+    .footer-progress-bar {
+      flex: 1;
+      height: 4px;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 99px;
+      margin: 0 40px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .footer-progress-fill {
+      height: 100%;
+      background: var(--gradient-main);
+      width: 0%;
+      transition: width 0.3s ease;
+    }
+
+    .nav-btn {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--border-color);
+      color: var(--text-main);
+      padding: 8px 18px;
+      font-size: 13px;
+      font-weight: 600;
+      border-radius: 8px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.2s ease;
+    }
+
+    .nav-btn:hover {
+      background: rgba(255, 255, 255, 0.08);
+      border-color: var(--color-primary);
+    }
+
+    .slide-counter {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+
+    /* Typography & Visual Elements */
+    h1 {
+      font-size: 52px;
+      font-weight: 800;
+      letter-spacing: -2px;
+      line-height: 1.1;
+      margin-bottom: 12px;
+    }
+
+    h2 {
+      font-size: 38px;
+      font-weight: 700;
+      letter-spacing: -1.2px;
+      margin-bottom: 24px;
+      color: var(--text-main);
+    }
+
+    .slide-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(59, 130, 246, 0.1);
+      border: 1px solid rgba(59, 130, 246, 0.2);
+      color: #60a5fa;
+      padding: 6px 14px;
+      border-radius: 99px;
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 24px;
+      align-self: flex-start;
+    }
+
+    .gradient-text {
+      background: var(--gradient-main);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    /* Grid Layouts (Bento System) */
+    .grid-2x2 {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 24px;
+      width: 100%;
+    }
+
+    .grid-3col {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
+      width: 100%;
+    }
+
+    .grid-4col {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 18px;
+      width: 100%;
+    }
+
+    .card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 16px;
+      padding: 30px;
+      position: relative;
+      overflow: hidden;
+      transition: all 0.3s ease;
+      backdrop-filter: blur(10px);
+    }
+
+    .card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+    }
+
+    .card:hover {
+      border-color: var(--border-glow);
+      transform: translateY(-4px);
+    }
+    
+    .card.highlight {
+      border-color: rgba(139, 92, 246, 0.4);
+      box-shadow: var(--shadow-bento);
+    }
+
+    .card-icon {
+      width: 44px;
+      height: 44px;
+      border-radius: 10px;
+      background: rgba(59, 130, 246, 0.1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--color-primary);
+      margin-bottom: 20px;
+    }
+
+    .card-title {
+      font-size: 18px;
+      font-weight: 700;
+      margin-bottom: 10px;
+      letter-spacing: -0.4px;
+    }
+
+    .card-desc {
+      font-size: 14px;
+      color: var(--text-muted);
+      line-height: 1.5;
+    }
+
+    /* List Layouts */
+    .bullet-list {
+      list-style: none;
+      margin-top: 10px;
+    }
+
+    .bullet-list li {
+      font-size: 15px;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      color: var(--text-main);
+    }
+
+    .bullet-list li::before {
+      content: '✦';
+      color: var(--color-primary);
+      font-size: 13px;
+    }
+
+    /* Cover / Hero layout specifically */
+    .hero-layout {
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .hero-layout h1 {
+      font-size: 72px;
+      margin-bottom: 16px;
+    }
+
+    .hero-layout p {
+      font-size: 20px;
+      color: var(--text-muted);
+      max-width: 700px;
+      line-height: 1.6;
+      margin-bottom: 40px;
+    }
+
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--border-color);
+      padding: 8px 16px;
+      border-radius: 99px;
+      font-size: 13px;
+      color: var(--text-main);
+      margin-bottom: 30px;
+      backdrop-filter: blur(10px);
+    }
+
+    .glow-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 99px;
+      background: var(--color-success);
+      box-shadow: 0 0 10px var(--color-success);
+      display: inline-block;
+    }
+
+    /* Interactive Elements inside slides */
+    .tech-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 16px;
+      width: 100%;
+    }
+
+    .tech-pill {
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 20px;
+      text-align: center;
+      font-weight: 600;
+      font-size: 13px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+    }
+    
+    .tech-pill svg {
+      width: 32px;
+      height: 32px;
+      color: var(--color-primary);
+    }
+
+    /* Design language components */
+    .ds-preview {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+
+    .ds-btn {
+      padding: 10px 22px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      border: 0;
+    }
+
+    .ds-btn-primary {
+      background: var(--gradient-main);
+      color: white;
+    }
+
+    .ds-btn-outline {
+      background: transparent;
+      border: 1px solid var(--border-color);
+      color: var(--text-main);
+    }
+
+    .ds-btn-ghost {
+      background: transparent;
+      color: var(--text-muted);
+    }
+
+    .ds-btn-ghost:hover {
+      color: var(--text-main);
+      background: rgba(255, 255, 255, 0.05);
+    }
+
+    .ds-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 16px;
+      width: 180px;
+    }
+
+    .ds-input {
+      background: rgba(0, 0, 0, 0.25);
+      border: 1px solid var(--border-color);
+      color: white;
+      padding: 10px 14px;
+      border-radius: 8px;
+      font-size: 13px;
+      outline: 0;
+      width: 220px;
+    }
+
+    .ds-input:focus {
+      border-color: var(--color-primary);
+    }
+
+    /* Flow Chart styling */
+    .flow-line-container {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      width: 100%;
+      margin: 30px 0;
+      position: relative;
+    }
+
+    .flow-node {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 14px;
+      padding: 16px 20px;
+      width: 130px;
+      text-align: center;
+      font-size: 13px;
+      font-weight: 600;
+      z-index: 5;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.4);
+    }
+
+    .flow-node.active {
+      border-color: var(--color-primary);
+      box-shadow: 0 0 20px rgba(59, 130, 246, 0.2);
+    }
+
+    .flow-connector {
+      flex: 1;
+      height: 2px;
+      background: rgba(255,255,255,0.08);
+      position: relative;
+    }
+
+    .flow-connector::after {
+      content: '';
+      position: absolute;
+      right: 0;
+      top: -4px;
+      width: 10px;
+      height: 10px;
+      border-top: 2px solid var(--text-muted);
+      border-right: 2px solid var(--text-muted);
+      transform: rotate(45deg);
+    }
+
+    /* Competitive Matrix Table */
+    .matrix-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 15px;
+      font-size: 13px;
+    }
+
+    .matrix-table th, .matrix-table td {
+      padding: 14px 18px;
+      text-align: left;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .matrix-table th {
+      color: var(--text-muted);
+      font-weight: 600;
+    }
+
+    .matrix-table tr:hover td {
+      background: rgba(255,255,255,0.01);
+    }
+
+    .matrix-check {
+      color: var(--color-success);
+      font-weight: bold;
+    }
+
+    .matrix-cross {
+      color: var(--color-destructive);
+      font-weight: bold;
+    }
+
+    /* Canvas charts sizes */
+    .canvas-container {
+      width: 100%;
+      height: 280px;
+      background: rgba(0,0,0,0.15);
+      border-radius: 12px;
+      border: 1px solid var(--border-color);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    canvas {
+      width: 100%;
+      height: 100%;
+    }
+
+    /* Toggle Index Sidebar button */
+    .toggle-sidebar-btn {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      z-index: 120;
+      background: rgba(15, 23, 42, 0.85);
+      border: 1px solid var(--border-color);
+      color: white;
+      padding: 8px;
+      border-radius: 8px;
+      cursor: pointer;
+      backdrop-filter: blur(10px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .toggle-sidebar-btn:hover {
+      border-color: var(--color-primary);
+    }
+
+    /* Custom scrollbar for entire presentation */
+    ::-webkit-scrollbar {
+      display: none;
+    }
+
+    /* Responsive scaling wrapper */
+    .slide-content {
+      max-width: 960px;
+      width: 100%;
+      margin: 0 auto;
+    }
+
+    /* Dashboard Widgets mockup style */
+    .widget-container {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+      background: rgba(0,0,0,0.3);
+      padding: 16px;
+      border-radius: 12px;
+      border: 1px solid var(--border-color);
+      margin-top: 15px;
+    }
+
+    .widget {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 12px 16px;
+      min-height: 110px;
+    }
+
+    .widget-title {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      color: var(--text-muted);
+      margin-bottom: 8px;
+    }
+
+    .widget-val {
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--text-main);
+    }
+
+    /* Layout divisions */
+    .flex-split {
+      display: flex;
+      gap: 40px;
+      align-items: center;
+      width: 100%;
+    }
+
+    .flex-split-left {
+      flex: 1.2;
+    }
+
+    .flex-split-right {
+      flex: 0.8;
+    }
+
+    .timeline-container {
+      display: flex;
+      justify-content: space-between;
+      position: relative;
+      margin-top: 40px;
+    }
+
+    .timeline-container::after {
+      content: '';
+      position: absolute;
+      top: 25px;
+      left: 5%;
+      width: 90%;
+      height: 2px;
+      background: rgba(255,255,255,0.08);
+      z-index: 1;
+    }
+
+    .timeline-step {
+      width: 22%;
+      text-align: center;
+      position: relative;
+      z-index: 5;
+    }
+
+    .timeline-dot {
+      width: 52px;
+      height: 52px;
+      border-radius: 99px;
+      background: var(--bg-card);
+      border: 2px solid var(--border-color);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 16px auto;
+      font-weight: 700;
+      color: var(--color-primary);
+      box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+    }
+
+    .timeline-step.active .timeline-dot {
+      border-color: var(--color-primary);
+      box-shadow: 0 0 15px rgba(59,130,246,0.3);
+      background: rgba(59,130,246,0.1);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Toggle Sidebar Index -->
+  <button class="toggle-sidebar-btn" onclick="toggleSidebar()" title="Toggle Index (Sidebar)">
+    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+  </button>
+
+  <div class="presentation-container">
+    
+    <!-- Sidebar Navigation -->
+    <div class="sidebar" id="sidebar">
+      <div class="sidebar-header">
+        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: #3b82f6;"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
+        <span class="sidebar-logo-text">SprintMaster AI</span>
+      </div>
+      <div class="sidebar-scroll" id="sidebar-scroll">
+        <!-- Rendered dynamically by JavaScript -->
+      </div>
+    </div>
+
+    <!-- Slide Stage -->
+    <div class="slide-stage">
+      <div class="slides-wrapper">
+
+        <!-- SLIDE 1: COVER -->
+        <div class="slide active hero-layout" id="slide-1">
+          <div class="slide-content">
+            <div class="hero-badge">
+              <span class="glow-dot"></span>
+              SaaS Funding Presentation Deck
+            </div>
+            <h1>SprintMaster <span class="gradient-text">AI</span></h1>
+            <p>AI-Powered Agile Project Management Platform. Translate ambitious multi-domain goals into strictly executable one-day sprints with optimized, AI-generated subtasks.</p>
+            <div class="ds-preview" style="justify-content: center; margin-top: 10px;">
+              <button class="ds-btn ds-btn-primary" onclick="nextSlide()">Get Started</button>
+              <button class="ds-btn ds-btn-outline" onclick="jumpToSlide(30)">Contact Us</button>
+            </div>
+            <div style="margin-top: 40px; font-size: 11px; color: var(--text-muted); font-family: 'JetBrains Mono', monospace;">
+              Press Arrow Keys or Space to Navigate
+            </div>
+          </div>
+        </div>
+
+        <!-- SLIDE 2: EXECUTIVE SUMMARY -->
+        <div class="slide" id="slide-2">
+          <div class="slide-content">
+            <span class="slide-tag">Executive Summary</span>
+            <h2>What is SprintMaster AI?</h2>
+            <p style="color: var(--text-muted); margin-bottom: 24px; font-size: 15px; line-height: 1.6;">
+              A next-generation AI-powered Agile Project Management platform helping teams structure goals, execute tasks, and optimize daily operations through intelligent automation.
+            </p>
+            <div class="grid-3col">
+              <div class="card">
+                <div class="card-icon">⚡</div>
+                <div class="card-title">Intelligent Sprints</div>
+                <div class="card-desc">Instantly decompose raw goals into prioritized daily work items.</div>
+              </div>
+              <div class="card">
+                <div class="card-icon">⏰</div>
+                <div class="card-title">Daily Focus</div>
+                <div class="card-desc">Enforces a strict 1-24h scope to eliminate scope creep and decision fatigue.</div>
+              </div>
+              <div class="card">
+                <div class="card-icon">📊</div>
+                <div class="card-title">Dynamic Insights</div>
+                <div class="card-desc">Automatic project velocity calculation and automated retrospective reports.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- SLIDE 3: THE PROBLEM -->
+        <div class="slide" id="slide-3">
+          <div class="slide-content">
+            <span class="slide-tag">The Problem</span>
+            <h2>Why Standard Agile Planning Fails</h2>
+            <div class="flex-split">
+              <div class="flex-split-left">
+                <ul class="bullet-list">
+                  <li><strong>Sprint Planning Complexity:</strong> Planning takes hours of meeting time.</li>
+                  <li><strong>Manual Task Estimation:</strong> Developers and managers consistently misestimate subtasks.</li>
+                  <li><strong>Scope Creep & Delays:</strong> Goals extend beyond boundaries due to poor micro-prioritization.</li>
+                  <li><strong>Admin Overhead:</strong> Heavy tracking fatigue on teams.</li>
+                </ul>
+              </div>
+              <div class="flex-split-right">
+                <div class="canvas-container">
+                  <!-- Custom drawn problem stats canvas -->
+                  <canvas id="canvas-problem-stats"></canvas>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- SLIDE 4: THE SOLUTION -->
+        <div class="slide" id="slide-4">
+          <div class="slide-content">
+            <span class="slide-tag">The Solution</span>
+            <h2>Intelligent Automation Loop</h2>
+            <p style="color: var(--text-muted); margin-bottom: 20px; font-size: 15px;">
+              SprintMaster AI replaces manual backlogs with an automated planning workflow:
+            </p>
+            <div class="flow-line-container">
+              <div class="flow-node active">1. Goal Entry</div>
+              <div class="flow-connector"></div>
+              <div class="flow-node active">2. AI Engine</div>
+              <div class="flow-connector"></div>
+              <div class="flow-node active">3. Plan Scaling</div>
+              <div class="flow-connector"></div>
+              <div class="flow-node active">4. Kanban Board</div>
+              <div class="flow-connector"></div>
+              <div class="flow-node active">5. Success</div>
+            </div>
+            <div class="grid-2x2" style="margin-top: 20px;">
+              <div class="card" style="padding: 20px;">
+                <div class="card-title" style="font-size: 15px;">Time-Box Enforcement</div>
+                <div class="card-desc" style="font-size: 13px;">Our system automatically scales and clamps tasks to fit a 24-hour workspace budget.</div>
+              </div>
+              <div class="card" style="padding: 20px;">
+                <div class="card-title" style="font-size: 15px;">Micro-Decomposition</div>
+                <div class="card-desc" style="font-size: 13px;">Splits big milestones into clear tasks, dependencies, and risk checklists.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- SLIDE 5: PRODUCT VISION -->
+        <div class="slide" id="slide-5">
+          <div class="slide-content">
+            <span class="slide-tag">Vision & Roadmap</span>
+            <h2>Product Vision</h2>
+            <div class="grid-2x2">
+              <div class="card">
+                <div class="card-title" style="color: var(--color-primary);">Our Mission</div>
+                <p class="card-desc">To make sprint planning instantaneous, reducing operational waste, and ensuring teams ship value daily without administrative friction.</p>
+              </div>
+              <div class="card">
+                <div class="card-title" style="color: var(--color-accent);">Our Vision</div>
+                <p class="card-desc">A unified project execution layer where goals automatically decompose into pipelines with no human intervention needed for estimation.</p>
+              </div>
+              <div class="card">
+                <div class="card-title" style="color: var(--color-cyan);">Long-term Goals</div>
+                <p class="card-desc">Establish native integrations with GitHub, Jira, and Slack, creating a self-healing daily ecosystem for software and operations teams globally.</p>
+              </div>
+              <div class="card">
+                <div class="card-title" style="color: var(--color-success);">Key Differentiation</div>
+                <p class="card-desc">Dynamic duration normalization fitting absolute 1-day limits and fully integrated AI rollbacks preserving database transactional integrity.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- SLIDE 6: TARGET AUDIENCE -->
+        <div class="slide" id="slide-6">
+          <div class="slide-content">
+            <span class="slide-tag">Target Audience</span>
+            <h2>Ideal Customer Profile (ICP)</h2>
+            <p style="color: var(--text-muted); margin-bottom: 24px; font-size: 14px;">SprintMaster AI serves critical segments seeking high-efficiency work loops:</p>
+            <div class="grid-4col">
+              <div class="card">
+                <div class="card-title" style="font-size: 15px;">Startups</div>
+                <div class="card-desc" style="font-size: 12px;">Need to pivot quickly and execute feature releases with minimal meeting overhead.</div>
+              </div>
+              <div class="card">
+                <div class="card-title" style="font-size: 15px;">SaaS Companies</div>
+                <div class="card-desc" style="font-size: 12px;">Need automated estimation pipelines for continuous deployment.</div>
+              </div>
+              <div class="card">
+                <div class="card-title" style="font-size: 15px;">Product Teams</div>
+                <div class="card-desc" style="font-size: 12px;">Desire quantitative data matching daily velocity with business targets.</div>
+              </div>
+              <div class="card">
+                <div class="card-title" style="font-size: 15px;">Agile Engineers</div>
+                <div class="card-desc" style="font-size: 12px;">Desire clean, independent tasks with clear priority lines and dependency mappings.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- SLIDE 7: BUSINESS MODEL -->
+        <div class="slide" id="slide-7">
+          <div class="slide-content">
+            <span class="slide-tag">Monetization</span>
+            <h2>Flexible SaaS Subscription Model</h2>
+            <div class="grid-4col">
+              <div class="card">
+                <div class="card-title" style="font-size: 15px;">Free</div>
+                <div class="card-val" style="font-size: 26px; font-weight:800; margin:10px 0;">$0</div>
+                <div class="card-desc" style="font-size: 12px;">
+                  3 one-day sprints / mo<br/>
+                  Basic AI generation<br/>
+                  Standard Kanban
+                </div>
+              </div>
+              <div class="card highlight">
+                <div class="card-title" style="font-size: 15px; color: var(--color-accent);">Pro</div>
+                <div class="card-val" style="font-size: 26px; font-weight:800; margin:10px 0;">$9<span style="font-size:12px; color: var(--text-muted)">/mo</span></div>
+                <div class="card-desc" style="font-size: 12px;">
+                  Unlimited Sprints<br/>
+                  Detailed AI planning<br/>
+                  Pro Regenerate<br/>
+                  Task dependencies
+                </div>
+              </div>
+              <div class="card">
+                <div class="card-title" style="font-size: 15px;">Business</div>
+                <div class="card-val" style="font-size: 26px; font-weight:800; margin:10px 0;">$29<span style="font-size:12px; color: var(--text-muted)">/mo</span></div>
+                <div class="card-desc" style="font-size: 12px;">
+                  Shared Team Sprints<br/>
+                  Shared boards<br/>
+                  Active slack integration<br/>
+                  Standard API keys
+                </div>
+              </div>
+              <div class="card">
+                <div class="card-title" style="font-size: 15px;">Enterprise</div>
+                <div class="card-val" style="font-size: 26px; font-weight:800; margin:10px 0;">Custom</div>
+                <div class="card-desc" style="font-size: 12px;">
+                  SSO / SAML login<br/>
+                  Dedicated database<br/>
+                  On-Prem deployment<br/>
+                  Custom AI SLA
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- SLIDE 8: MARKET OPPORTUNITY -->
+        <div class="slide" id="slide-8">
+          <div class="slide-content">
+            <span class="slide-tag">Market Analysis</span>
+            <h2>Growing TAM for AI Productivity</h2>
+            <div class="flex-split">
+              <div class="flex-split-left">
+                <p style="color: var(--text-muted); font-size: 14px; line-height: 1.5; margin-bottom: 16px;">
+                  The Agile Project Management software market size is growing, accelerated by the transition to remote setups and the AI productivity wave.
+                </p>
+                <div class="widget" style="margin-bottom: 12px; min-height: 80px;">
+                  <div class="widget-title" style="margin-bottom: 2px;">TAM (Total Addressable Market)</div>
+                  <div class="widget-val" style="color: var(--color-cyan)">$20.4 Billion</div>
+                </div>
+                <div class="widget" style="min-height: 80px;">
+                  <div class="widget-title" style="margin-bottom: 2px;">CAGR (AI Productivity tools)</div>
+                  <div class="widget-val" style="color: var(--color-accent)">+38.2% (2024-2030)</div>
+                </div>
+              </div>
+              <div class="flex-split-right">
+                <div class="canvas-container">
+                  <canvas id="canvas-market-opportunity"></canvas>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- SLIDE 9: PLATFORM OVERVIEW -->
+        <div class="slide" id="slide-9">
+          <div class="slide-content">
+            <span class="slide-tag">Architecture</span>
+            <h2>System Overview</h2>
+            <div class="grid-col" style="display: flex; flex-direction: column; gap: 12px;">
+              <div class="card" style="padding: 18px; display: flex; align-items: center; justify-content: space-between;">
+                <div style="font-weight: 700;">Client Web Tier</div>
+                <div style="color: var(--text-muted); font-size: 13px;">React Single Page App · Zustand Client State · Tailwind CSS</div>
+              </div>
+              <div class="card" style="padding: 18px; display: flex; align-items: center; justify-content: space-between; border-color: var(--color-primary);">
+                <div style="font-weight: 700; color: var(--color-primary);">API & CMS Layer</div>
+                <div style="color: var(--text-muted); font-size: 13px;">Next.js App Server · Payload CMS Headless Controllers · REST API</div>
+              </div>
+              <div class="card" style="padding: 18px; display: flex; align-items: center; justify-content: space-between;">
+                <div style="font-weight: 700;">AI Engine</div>
+                <div style="color: var(--text-muted); font-size: 13px;">Groq API · Llama-3.1-8b-instant · OpenAI Node Integration</div>
+              </div>
+              <div class="card" style="padding: 18px; display: flex; align-items: center; justify-content: space-between;">
+                <div style="font-weight: 700;">Persistence & Email</div>
+                <div style="color: var(--text-muted); font-size: 13px;">MongoDB Atlas (Mongoose) · SMTP Transport / Resend Email API</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- SLIDE 10: TECHNOLOGY STACK -->
+        <div class="slide" id="slide-10">
+          <div class="slide-content">
+            <span class="slide-tag">Tech Stack</span>
+            <h2>Unified Developer Ecosystem</h2>
+            <div class="tech-grid">
+              <div class="tech-pill">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
+                React 18
+              </div>
+              <div class="tech-pill">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" /></svg>
+                Next.js 15
+              </div>
+              <div class="tech-pill">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" /></svg>
+                Payload 3
+              </div>
+              <div class="tech-pill">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4" /></svg>
+                MongoDB
+              </div>
+              <div class="tech-pill">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
+                Groq Llama
+              </div>
+            </div>
+            <p style="color: var(--text-muted); font-size: 13px; margin-top: 24px; text-align: center;">
+              Utilizing a monorepo setup to accelerate deployment pipelines, using Vitest and Playwright to verify builds.
+            </p>
+          </div>
+        </div>
+
+        <!-- SLIDE 11: UI/UX DESIGN SYSTEM -->
+        <div class="slide" id="slide-11">
+          <div class="slide-content">
+            <span class="slide-tag">Design System</span>
+            <h2>UI/UX Design Principles</h2>
+            <div class="grid-2x2">
+              <div class="card" style="padding: 20px;">
+                <div class="card-title" style="font-size: 16px;">Dark Mode by Default</div>
+                <div class="card-desc" style="font-size: 13px;">Curated slate HSL colors reduce eye strain and establish a sleek, professional developer aesthetic.</div>
+              </div>
+              <div class="card" style="padding: 20px;">
+                <div class="card-title" style="font-size: 16px;">Glassmorphism Panels</div>
+                <div class="card-desc" style="font-size: 13px;">Subtle transparent backdrops and white borders mimic high-end desktop app overlays.</div>
+              </div>
+              <div class="card" style="padding: 20px;">
+                <div class="card-title" style="font-size: 16px;">Framer Motion Layouts</div>
+                <div class="card-desc" style="font-size: 13px;">Hardware-accelerated animations guide the user's attention during task updates.</div>
+              </div>
+              <div class="card" style="padding: 20px;">
+                <div class="card-title" style="font-size: 16px;">Bento Grid Layout</div>
+                <div class="card-desc" style="font-size: 13px;">Compact widgets display vital usage counters and sprint statistics inside a clean dashboard.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- SLIDE 12: DESIGN LANGUAGE -->
+        <div class="slide" id="slide-12">
+          <div class="slide-content">
+            <span class="slide-tag">Design Language</span>
+            <h2>Interface Components</h2>
+            <div class="grid-2x2">
+              <div class="card">
+                <div class="card-title" style="font-size:15px; margin-bottom:12px;">Interactive Buttons</div>
+                <div class="ds-preview">
+                  <button class="ds-btn ds-btn-primary">Gradient</button>
+                  <button class="ds-btn ds-btn-outline">Outline</button>
+                  <button class="ds-btn ds-btn-ghost">Ghost</button>
+                </div>
+              </div>
+              <div class="card">
+                <div class="card-title" style="font-size:15px; margin-bottom:12px;">Form Controls</div>
+                <div class="ds-preview">
+                  <input type="text" class="ds-input" placeholder="Enter sprint goal..." value="Improve database indexing" />
+                </div>
+              </div>
+              <div class="card" style="grid-column: span 2;">
+                <div class="card-title" style="font-size:15px; margin-bottom:12px;">SaaS Glassmorphic Cards</div>
+                <div class="ds-preview" style="justify-content: space-around;">
+                  <div class="ds-card">
+                    <div style="font-weight:700; font-size:13px; margin-bottom:6px;">Draft Sprint</div>
+                    <div style="font-size:11px; color:var(--text-muted)">4 subtasks · 12h</div>
+                  </div>
+                  <div class="ds-card" style="border-color: var(--color-success)">
+                    <div style="font-weight:700; font-size:13px; margin-bottom:6px; color:var(--color-success)">Completed</div>
+                    <div style="font-size:11px; color:var(--text-muted)">Done · 100%</div>
+                  </div>
+                  <div class="ds-card" style="border-color: var(--color-warning)">
+                    <div style="font-weight:700; font-size:13px; margin-bottom:6px; color:var(--color-warning)">In Progress</div>
+                    <div style="font-size:11px; color:var(--text-muted)">2 subtasks left</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- SLIDE 13: USER JOURNEY -->
+        <div class="slide" id="slide-13">
+          <div class="slide-content">
+            <span class="slide-tag">User Experience</span>
+            <h2>Onboarding & Sprint Flow</h2>
+            <div class="bullet-list" style="display:grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+              <div>
+                <h4 style="font-size:16px; margin-bottom:8px; color: var(--color-primary)">1. Setup Session</h4>
+                <p style="font-size:13px; color: var(--text-muted)">User registers an account; receives email token via Resend/SMTP to unlock their workspace.</p>
+              </div>
+              <div>
+                <h4 style="font-size:16px; margin-bottom:8px; color: var(--color-accent)">2. Goal Input</h4>
+                <p style="font-size:13px; color: var(--text-muted)">Describes desired outcomes in natural language inside the main dashboard panel.</p>
+              </div>
+              <div>
+                <h4 style="font-size:16px; margin-bottom:8px; color: var(--color-cyan)">3. AI Generation</h4>
+                <p style="font-size:13px; color: var(--text-muted)">Groq plans subtasks, clamps durations, and normalizes them to exactly one-day (1-24h).</p>
+              </div>
+              <div>
+                <h4 style="font-size:16px; margin-bottom:8px; color: var(--color-success)">4. Track & Close</h4>
+                <p style="font-size:13px; color: var(--text-muted)">Check off tasks on board; system recalculates progress indicators and caches values.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- SLIDE 14: DASHBOARD EXPERIENCE -->
+        <div class="slide" id="slide-14">
+          <div class="slide-content">
+            <span class="slide-tag">Dashboard</span>
+            <h2>Workstation Hub</h2>
+            <p style="color: var(--text-muted); font-size: 13px;">Our interface features live usage dials, quick actions, and current sprints lists:</p>
+            <div class="widget-container">
+              <div class="widget">
+                <div class="widget-title">Sprint Limit (Free)</div>
+                <div class="widget-val">2 / 3</div>
+                <div style="font-size:10px; color:var(--text-muted); margin-top:4px;">1 attempt left this month</div>
+              </div>
+              <div class="widget" style="border-color: var(--color-accent);">
+                <div class="widget-title" style="color: var(--color-accent);">Active Daily Sprints</div>
+                <div class="widget-val">1</div>
+                <div style="font-size:10px; color:var(--text-muted); margin-top:4px;">In Progress: "Refactor API routing"</div>
+              </div>
+              <div class="widget">
+                <div class="widget-title">Global Completion Rate</div>
+                <div class="widget-val">87.5%</div>
+                <div style="font-size:10px; color:var(--color-success); margin-top:4px;">+4.2% since last week</div>
+              </div>
+            </div>
+            <div class="card" style="margin-top: 16px; padding: 18px; display:flex; align-items:center; justify-content:space-between;">
+              <div>
+                <div style="font-weight:700; font-size:14px;">"Design new onboarding screen"</div>
+                <div style="font-size:11px; color: var(--text-muted)">Generated yesterday · 6 subtasks · 8.0h estimated</div>
+              </div>
+              <button class="ds-btn ds-btn-primary" style="padding: 6px 14px;">Open Sprint</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- SLIDE 15: PROJECT MANAGEMENT MODULE -->
+        <div class="slide" id="slide-15">
+          <div class="slide-content">
+            <span class="slide-tag">Module 1</span>
+            <h2>Project Management Core</h2>
+            <div class="flex-split">
+              <div class="flex-split-left">
+                <ul class="bullet-list">
+                  <li><strong>Project Organization:</strong> Groups multiple one-day sprints into parent projects.</li>
+                  <li><strong>Team Assignment:</strong> Invite and delegate sprints to specific workspace members.</li>
+                  <li><strong>Progress Monitors:</strong> Automatically calculates project completion percentages.</li>
+                  <li><strong>Active Filtering:</strong> Query sprints by owner, date, and execution state.</li>
+                </ul>
+              </div>
+              <div class="flex-split-right">
+                <div class="card highlight">
+                  <div class="card-title" style="font-size: 15px;">Parent-Child Mapping</div>
+                  <p class="card-desc" style="font-size: 12px; margin-bottom: 12px;">Allows nesting AI Sprints under long-term company milestones.</p>
+                  <div style="font-size: 11px; color: var(--color-cyan); font-family: 'JetBrains Mono', monospace;">
+                    Project X (100% Done)<br/>
+                    ├─ Sprint A: Write Docs (100%)<br/>
+                    └─ Sprint B: Deploy (100%)
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- SLIDE 16: SPRINT MANAGEMENT MODULE -->
+        <div class="slide" id="slide-16">
+          <div class="slide-content">
+            <span class="slide-tag">Module 2</span>
+            <h2>Sprint Planning Board</h2>
+            <div class="flex-split">
+              <div class="flex-split-left">
+                <div class="card" style="padding: 20px; border-color: var(--color-primary)">
+                  <div style="font-weight:700; font-size:15px; margin-bottom:10px; color: var(--color-primary)">Active State Board</div>
+                  <div style="font-size: 12px; color:var(--text-muted); line-height: 1.5;">
+                    Transition sprints between <strong>Draft</strong>, <strong>Generated</strong>, <strong>In Progress</strong>, and <strong>Done</strong>. This automatically updates user limits, calculations, and active task states.
+                  </div>
+                </div>
+              </div>
+              <div class="flex-split-right">
+                <ul class="bullet-list">
+                  <li><strong>Sprint Creation:</strong> Instant setup.</li>
+                  <li><strong>Sprint Monitoring:</strong> Shows task timers.</li>
+                  <li><strong>Burndown Tracking:</strong> Hour burndown chart.</li>
+                  <li><strong>Editable Fields:</strong> Edit titles inline.</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- SLIDE 17: TASK MANAGEMENT MODULE -->
+        <div class="slide" id="slide-17">
+          <div class="slide-content">
+            <span class="slide-tag">Module 3</span>
+            <h2>Granular Task Execution</h2>
+            <div class="grid-3col">
+              <div class="card">
+                <div class="card-title" style="font-size:15px; color: var(--color-primary);">Dependencies</div>
+                <div class="card-desc" style="font-size:12px;">Tasks can depend on previous items; prompts enforce dependency tracking.</div>
+              </div>
+              <div class="card">
+                <div class="card-title" style="font-size:15px; color: var(--color-accent);">Time Logging</div>
+                <div class="card-desc" style="font-size:12px;">Every task features an estimated duration (e.g. 1.5h), supporting daily scheduling.</div>
+              </div>
+              <div class="card">
+                <div class="card-title" style="font-size:15px; color: var(--color-cyan);">Prioritization</div>
+                <div class="card-desc" style="font-size:12px;">Tasks are tagged Low, Medium, or High, indicating clear focus areas.</div>
+              </div>
+            </div>
+            <p style="color:var(--text-muted); font-size:12px; margin-top:20px; text-align:center;">
+              Task state mutations are done with PATCH REST endpoints, immediately updating database fields.
+            </p>
+          </div>
+        </div>
+
+        <!-- SLIDE 18: AI FEATURES -->
+        <div class="slide" id="slide-18">
+          <div class="slide-content">
+            <span class="slide-tag">AI Features</span>
+            <h2>Custom Planning Engine</h2>
+            <div class="grid-2x2">
+              <div class="card" style="padding:20px;">
+                <div style="font-weight:700; font-size:15px; color: var(--color-primary); margin-bottom:8px;">Prompting Strategy</div>
+                <div style="font-size:12px; color:var(--text-muted)">Instructs LLM to return valid JSON with strict schema validation. Excludes conversational clutter.</div>
+              </div>
+              <div class="card" style="padding:20px;">
+                <div style="font-weight:700; font-size:15px; color: var(--color-accent); margin-bottom:8px;">Scale & Normalize</div>
+                <div style="font-size:12px; color:var(--text-muted)">Deterministic algorithm clamps tasks to 0.5h-8h and scales them to fit the 1-24h day budget.</div>
+              </div>
+              <div class="card" style="padding:20px;">
+                <div style="font-weight:700; font-size:15px; color: var(--color-cyan); margin-bottom:8px;">Alternative Paths</div>
+                <div style="font-size:12px; color:var(--text-muted)">Pro-tier option accepts historical logs and instructs Groq to build different execution models.</div>
+              </div>
+              <div class="card" style="padding:20px;">
+                <div style="font-weight:700; font-size:15px; color: var(--color-success); margin-bottom:8px;">Atomic Rollbacks</div>
+                <div style="font-size:12px; color:var(--text-muted)">Failures during task creation trigger immediate deletions of partial DB objects.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- SLIDE 19: ANALYTICS & REPORTING -->
+        <div class="slide" id="slide-19">
+          <div class="slide-content">
+            <span class="slide-tag">Analytics</span>
+            <h2>Sprint Metrics & Velocity</h2>
+            <div class="flex-split">
+              <div class="flex-split-left">
+                <ul class="bullet-list">
+                  <li><strong>Burndown Chart:</strong> Visualizes actual progress vs. ideal daily timeline.</li>
+                  <li><strong>Velocity Statistics:</strong> Analyzes average daily focus hours delivered by team members.</li>
+                  <li><strong>Performance Insights:</strong> Flags bottleneck tasks that block subsequent dependencies.</li>
+                </ul>
+              </div>
+              <div class="flex-split-right">
+                <div class="canvas-container">
+                  <canvas id="canvas-analytics-burndown"></canvas>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- SLIDE 20: ARCHITECTURE -->
+        <div class="slide" id="slide-20">
+          <div class="slide-content">
+            <span class="slide-tag">System Design</span>
+            <h2>Decoupled Monorepo Architecture</h2>
+            <p style="color: var(--text-muted); font-size:14px; margin-bottom: 20px;">
+              Decoupling static presentation elements from heavy API and database layers ensures resilience and high loading speeds.
+            </p>
+            <div class="card" style="font-family: 'JetBrains Mono', monospace; font-size:12px; padding:24px;">
+              Vite SPA Frontend (Vercel CDN)<br/>
+              &nbsp;&nbsp;&nbsp;&nbsp;│<br/>
+              &nbsp;&nbsp;&nbsp;&nbsp;▼ (HTTPS REST / CORS / Cookies JWT)<br/>
+              Next.js 15 Backend API (Docker Node Server)<br/>
+              &nbsp;&nbsp;&nbsp;&nbsp;├─► Payload CMS Core Controller (Access Control Hooks)<br/>
+              &nbsp;&nbsp;&nbsp;&nbsp;├─► MongoDB Atlas Database (Mongoose Layer)<br/>
+              &nbsp;&nbsp;&nbsp;&nbsp;└─► Groq AI / SMTP Mail Adapters (Resend API)
+            </div>
+          </div>
+        </div>
+
+        <!-- SLIDE 21: DATABASE ARCHITECTURE -->
+        <div class="slide" id="slide-21">
+          <div class="slide-content">
+            <span class="slide-tag">Database Design</span>
+            <h2>Collection Schema Mapping</h2>
+            <div class="grid-3col">
+              <div class="card" style="padding:16px;">
+                <div style="font-weight:700; font-size:14px; color: var(--color-primary); margin-bottom:8px;">Users</div>
+                <div style="font-size:11px; color:var(--text-muted); font-family: 'JetBrains Mono', monospace;">
+                  - email (unique)<br/>
+                  - subscription<br/>
+                  - role (user/admin)<br/>
+                  - sprintCount (cached)<br/>
+                  - generationAttempts
+                </div>
+              </div>
+              <div class="card" style="padding:16px;">
+                <div style="font-weight:700; font-size:14px; color: var(--color-accent); margin-bottom:8px;">Sprints</div>
+                <div style="font-size:11px; color:var(--text-muted); font-family: 'JetBrains Mono', monospace;">
+                  - title (req)<br/>
+                  - description<br/>
+                  - goal (req)<br/>
+                  - status<br/>
+                  - estimatedHours<br/>
+                  - createdBy (ref Users)
+                </div>
+              </div>
+              <div class="card" style="padding:16px;">
+                <div style="font-weight:700; font-size:14px; color: var(--color-cyan); margin-bottom:8px;">Tasks</div>
+                <div style="font-size:11px; color:var(--text-muted); font-family: 'JetBrains Mono', monospace;">
+                  - title (req)<br/>
+                  - duration (text)<br/>
+                  - priority<br/>
+                  - dependsOn (json)<br/>
+                  - completed<br/>
+                  - sprint (ref Sprints)
+                </div>
+              </div>
+            </div>
+            <p style="color:var(--text-muted); font-size:11px; margin-top:20px; text-align:center;">
+              Collections use Payload joins for efficient population, reducing lookup request frequencies.
+            </p>
+          </div>
+        </div>
+
+        <!-- SLIDE 22: SECURITY -->
+        <div class="slide" id="slide-22">
+          <div class="slide-content">
+            <span class="slide-tag">Security</span>
+            <h2>Enterprise Security Standards</h2>
+            <div class="grid-2x2">
+              <div class="card" style="padding:20px;">
+                <div class="card-title" style="font-size:15px; color: var(--color-primary)">Stateless JWT</div>
+                <div class="card-desc" style="font-size:12px;">Sessions are verified using secure JSON Web Tokens stored on the client and in browser cookies.</div>
+              </div>
+              <div class="card" style="padding:20px;">
+                <div class="card-title" style="font-size:15px; color: var(--color-accent)">Row-Level Access (RLS)</div>
+                <div class="card-desc" style="font-size:12px;">Database operations evaluate document ownership, restricting read/update scopes automatically.</div>
+              </div>
+              <div class="card" style="padding:20px;">
+                <div class="card-title" style="font-size:15px; color: var(--color-cyan)">Bcrypt Encryption</div>
+                <div class="card-desc" style="font-size:12px;">Passwords are encrypted at the database level. Direct passwords are never stored.</div>
+              </div>
+              <div class="card" style="padding:20px;">
+                <div class="card-title" style="font-size:15px; color: var(--color-success)">Dual-Tier Validation</div>
+                <div class="card-desc" style="font-size:12px;">Double validated via Zod on the frontend and Payload mongoose schema verification on the backend.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- SLIDE 23: SCALABILITY -->
+        <div class="slide" id="slide-23">
+          <div class="slide-content">
+            <span class="slide-tag">Scalability</span>
+            <h2>Architectural Growth Path</h2>
+            <div class="timeline-container">
+              <div class="timeline-step active">
+                <div class="timeline-dot">10</div>
+                <div style="font-weight:700; font-size:12px;">Staging</div>
+                <div style="font-size:10px; color:var(--text-muted)">Single instance, shared MongoDB Atlas tier.</div>
+              </div>
+              <div class="timeline-step active">
+                <div class="timeline-dot">100</div>
+                <div style="font-weight:700; font-size:12px;">Launch</div>
+                <div style="font-size:10px; color:var(--text-muted)">Stateless server replication behind basic LB.</div>
+              </div>
+              <div class="timeline-step active">
+                <div class="timeline-dot">1k</div>
+                <div style="font-weight:700; font-size:12px;">Growth</div>
+                <div style="font-size:10px; color:var(--text-muted)">Database index optimizations and query caching.</div>
+              </div>
+              <div class="timeline-step active">
+                <div class="timeline-dot">10k+</div>
+                <div style="font-weight:700; font-size:12px;">Enterprise</div>
+                <div style="font-size:10px; color:var(--text-muted)">MongoDB sharding and dedicated Groq SLAs.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- SLIDE 24: CHALLENGES & SOLUTIONS -->
+        <div class="slide" id="slide-24">
+          <div class="slide-content">
+            <span class="slide-tag">Engineering</span>
+            <h2>Challenges & Resolutions</h2>
+            <table class="matrix-table" style="font-size: 11px;">
+              <thead>
+                <tr>
+                  <th>Challenge</th>
+                  <th>Root Cause</th>
+                  <th>Solution</th>
+                  <th>Outcome</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td style="font-weight:700;">SPA Routing 404s</td>
+                  <td>Vercel maps routes to server files</td>
+                  <td>Added `vercel.json` rewrite settings</td>
+                  <td>Clean page rehashes</td>
+                </tr>
+                <tr>
+                  <td style="font-weight:700;">AI Estimation Drift</td>
+                  <td>LLMs lack arithmetic consistency</td>
+                  <td>Developed duration normalization script</td>
+                  <td>Strict 24h daily bounds</td>
+                </tr>
+                <tr>
+                  <td style="font-weight:700;">Orphaned task entries</td>
+                  <td>Sequential database insertions fail</td>
+                  <td>Created transaction rollback catch</td>
+                  <td>Zero data drift/waste</td>
+                </tr>
+                <tr>
+                  <td style="font-weight:700;">Local signup friction</td>
+                  <td>Devs need verification keys</td>
+                  <td>Email log fallback to server terminal</td>
+                  <td>Offline local setup</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- SLIDE 25: DEVELOPMENT JOURNEY -->
+        <div class="slide" id="slide-25">
+          <div class="slide-content">
+            <span class="slide-tag">Timeline</span>
+            <h2>Product Milestones</h2>
+            <div class="bullet-list" style="display:grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+              <div>
+                <h4 style="font-size:15px; color: var(--color-primary)">Q1: Architectural Planning</h4>
+                <p style="font-size:12px; color: var(--text-muted)">Analyzed and designed monorepo workspace. Set up Payload CMS database schemas and local email configs.</p>
+              </div>
+              <div>
+                <h4 style="font-size:15px; color: var(--color-accent)">Q2: UX Design & Flow</h4>
+                <p style="font-size:12px; color: var(--text-muted)">Crafted high-fidelity dark luxury mockups. Built responsive Kanban layouts and navigation components.</p>
+              </div>
+              <div>
+                <h4 style="font-size:15px; color: var(--color-cyan)">Q3: AI Integration & Testing</h4>
+                <p style="font-size:12px; color: var(--text-muted)">Hooked up Groq Llama-3.1 API and built duration normalization scripts. Verified code using Vitest/Playwright.</p>
+              </div>
+              <div>
+                <h4 style="font-size:15px; color: var(--color-success)">Q4: Deployment & Launch</h4>
+                <p style="font-size:12px; color: var(--text-muted)">Deployed the Vite client to Vercel and backend to Docker staging. Launched public beta for users.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- SLIDE 26: FUTURE ROADMAP -->
+        <div class="slide" id="slide-26">
+          <div class="slide-content">
+            <span class="slide-tag">Roadmap</span>
+            <h2>Staged Future Roadmap</h2>
+            <div class="grid-3col">
+              <div class="card">
+                <div class="card-icon">👥</div>
+                <div class="card-title" style="font-size:16px;">Phase 1: Teams</div>
+                <div class="card-desc" style="font-size:12px;">Collaborative sprints, shared Kanban boards, and WebSockets live synchronization.</div>
+              </div>
+              <div class="card highlight">
+                <div class="card-icon">🔌</div>
+                <div class="card-title" style="font-size:16px; color:var(--color-accent)">Phase 2: Integrations</div>
+                <div class="card-desc" style="font-size:12px;">Automatic task sync to GitHub Issues, Jira projects, Linear tickets, or Slack messages.</div>
+              </div>
+              <div class="card">
+                <div class="card-icon">📈</div>
+                <div class="card-title" style="font-size:16px;">Phase 3: Insights</div>
+                <div class="card-desc" style="font-size:12px;">AI productivity retrospectives and predictive velocity charts based on history.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- SLIDE 27: COMPETITIVE ANALYSIS -->
+        <div class="slide" id="slide-27">
+          <div class="slide-content">
+            <span class="slide-tag">Competitors</span>
+            <h2>Product Matrix Comparison</h2>
+            <table class="matrix-table">
+              <thead>
+                <tr>
+                  <th>Feature</th>
+                  <th style="color:var(--color-primary)">SprintMaster AI</th>
+                  <th>Jira</th>
+                  <th>Trello</th>
+                  <th>Monday</th>
+                  <th>Linear</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td style="font-weight:700;">AI Sprint Decompositions</td>
+                  <td class="matrix-check">✓ (Under 3s)</td>
+                  <td class="matrix-cross">✗ (Manual)</td>
+                  <td class="matrix-cross">✗ (Manual)</td>
+                  <td class="matrix-cross">✗ (Manual)</td>
+                  <td class="matrix-cross">✗ (Manual)</td>
+                </tr>
+                <tr>
+                  <td style="font-weight:700;">Strict One-Day Timebox</td>
+                  <td class="matrix-check">✓ (Normalized)</td>
+                  <td class="matrix-cross">✗</td>
+                  <td class="matrix-cross">✗</td>
+                  <td class="matrix-cross">✗</td>
+                  <td class="matrix-cross">✗</td>
+                </tr>
+                <tr>
+                  <td style="font-weight:700;">Atomic Rollback Safety</td>
+                  <td class="matrix-check">✓ (Built-in)</td>
+                  <td class="matrix-cross">✗</td>
+                  <td class="matrix-cross">✗</td>
+                  <td class="matrix-cross">✗</td>
+                  <td class="matrix-cross">✗</td>
+                </tr>
+                <tr>
+                  <td style="font-weight:700;">Unified Monorepo CMS</td>
+                  <td class="matrix-check">✓ (Payload 3)</td>
+                  <td class="matrix-cross">✗</td>
+                  <td class="matrix-cross">✗</td>
+                  <td class="matrix-cross">✗</td>
+                  <td class="matrix-cross">✗</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- SLIDE 28: PRODUCT IMPACT -->
+        <div class="slide" id="slide-28">
+          <div class="slide-content">
+            <span class="slide-tag">Impact</span>
+            <h2>Business ROI Metrics</h2>
+            <div class="grid-3col">
+              <div class="card" style="text-align: center;">
+                <div style="font-size: 36px; font-weight:800; color: var(--color-cyan)">90%</div>
+                <div style="font-weight: 700; margin:10px 0 6px 0; font-size:14px;">Time Saved</div>
+                <div style="font-size: 11px; color: var(--text-muted)">Planning time reduced from hours to under 3 seconds.</div>
+              </div>
+              <div class="card highlight" style="text-align: center;">
+                <div style="font-size: 36px; font-weight:800; color: var(--color-primary)">3.5x</div>
+                <div style="font-weight: 700; margin:10px 0 6px 0; font-size:14px;">Velocity Boost</div>
+                <div style="font-size: 11px; color: var(--text-muted)">Faster task shipping due to strict one-day scoped backlogs.</div>
+              </div>
+              <div class="card" style="text-align: center;">
+                <div style="font-size: 36px; font-weight:800; color: var(--color-success)">Zero</div>
+                <div style="font-weight: 700; margin:10px 0 6px 0; font-size:14px;">Scope Creep</div>
+                <div style="font-size: 11px; color: var(--text-muted)">Tasks strictly locked to maximum 24 hours daily capacity.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- SLIDE 29: LIVE DEMO SECTION -->
+        <div class="slide" id="slide-29">
+          <div class="slide-content">
+            <span class="slide-tag">Staging</span>
+            <h2>Interactive Demo Sandbox</h2>
+            <p style="color: var(--text-muted); font-size: 14px; margin-bottom: 20px;">
+              Launch local test services easily using the developer repository setup.
+            </p>
+            <div class="card" style="padding: 20px; font-family: 'JetBrains Mono', monospace; font-size: 12px; border-color: var(--color-accent);">
+              <span style="color: #60a5fa;"># Launch Database and Backend</span><br/>
+              cd BE-sprint-master-ai<br/>
+              docker-compose up -d<br/>
+              npm run dev<br/><br/>
+              <span style="color: #60a5fa;"># Launch Frontend Application</span><br/>
+              cd ../FE-sprint-master-ai<br/>
+              npm run dev
+            </div>
+            <div style="font-size:11px; color:var(--text-muted); text-align:center; margin-top:20px;">
+              Staging clients will automatically point to `http://localhost:8080` for developer testing.
+            </div>
+          </div>
+        </div>
+
+        <!-- SLIDE 30: THANK YOU -->
+        <div class="slide hero-layout" id="slide-30">
+          <div class="slide-content">
+            <span class="slide-tag" style="align-self: center;">Closing Slide</span>
+            <h2>Ship Daily with SprintMaster AI</h2>
+            <p style="max-width: 600px; margin: 0 auto 30px auto; font-size: 16px;">
+              Thank you for exploring our presentation. Get full developer access and view our source code at our GitHub repository.
+            </p>
+            <div class="card" style="max-width: 500px; margin: 0 auto; padding: 20px 30px; text-align: left;">
+              <div style="font-weight: 700; font-size: 14px; margin-bottom: 8px;">Developer Details:</div>
+              <div style="font-size: 13px; color: var(--text-muted); line-height: 1.6;">
+                GitHub Repository: <a href="https://github.com/HusseinA-H/SprintMasterAi" style="color: var(--color-primary); text-decoration: none;" target="_blank">HusseinA-H/SprintMasterAi</a><br/>
+                API Target Port: `localhost:3000` (CMS Backend)<br/>
+                Client Target Port: `localhost:8080` (React Frontend)
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Slide Footer Controls -->
+      <div class="slide-footer">
+        <button class="nav-btn" onclick="prevSlide()">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+          Previous
+        </button>
+        
+        <div class="footer-progress-bar">
+          <div class="footer-progress-fill" id="progress-fill"></div>
+        </div>
+
+        <span class="slide-counter" id="slide-counter">1 / 30</span>
+        
+        <button class="nav-btn" onclick="nextSlide()" style="margin-left: 20px;">
+          Next
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+        </button>
+      </div>
+
+    </div>
+
+  </div>
+
+  <script>
+    // Slide Controller State
+    let currentSlideIndex = 1;
+    const totalSlides = 30;
+    
+    const slideTitles = [
+      "SprintMaster AI Cover",
+      "Executive Summary",
+      "The Problem",
+      "The Solution",
+      "Product Vision",
+      "Target Audience",
+      "Business Model",
+      "Market Opportunity",
+      "Platform Overview",
+      "Technology Stack",
+      "UI/UX Design System",
+      "Design Language",
+      "User Journey",
+      "Dashboard Experience",
+      "Project Management",
+      "Sprint Management",
+      "Task Management",
+      "AI Features Overview",
+      "Analytics & Reporting",
+      "Decoupled Architecture",
+      "Database Schema Map",
+      "Security Architecture",
+      "Scalability Model",
+      "Challenges & Solutions",
+      "Development Timeline",
+      "Future Product Roadmap",
+      "Competitive Matrix",
+      "Business Impact & ROI",
+      "Interactive Demo Sandbox",
+      "Thank You"
+    ];
+
+    // Initialize Index items
+    const scrollContainer = document.getElementById("sidebar-scroll");
+    for (let i = 1; i <= totalSlides; i++) {
+      const item = document.createElement("div");
+      item.className = `index-item ${i === 1 ? 'active' : ''}`;
+      item.id = `index-${i}`;
+      item.onclick = () => jumpToSlide(i);
+      
+      const numSpan = document.createElement("span");
+      numSpan.className = "index-number";
+      numSpan.innerText = String(i).padStart(2, '0');
+      
+      const titleSpan = document.createElement("span");
+      titleSpan.innerText = slideTitles[i-1];
+      
+      item.appendChild(numSpan);
+      item.appendChild(titleSpan);
+      scrollContainer.appendChild(item);
+    }
+
+    // Keyboard navigation listeners
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "ArrowRight" || e.key === " ") {
+        nextSlide();
+      } else if (e.key === "ArrowLeft") {
+        prevSlide();
+      }
+    });
+
+    // Navigation functions
+    function updateControls() {
+      // Toggle active slides
+      for (let i = 1; i <= totalSlides; i++) {
+        const slide = document.getElementById(`slide-${i}`);
+        const idxItem = document.getElementById(`index-${i}`);
+        if (i === currentSlideIndex) {
+          slide.classList.add("active");
+          idxItem.classList.add("active");
+          idxItem.scrollIntoView({ behavior: "smooth", block: "nearest" });
+        } else {
+          slide.classList.remove("active");
+          idxItem.classList.remove("active");
+        }
+      }
+
+      // Update progress bar
+      const progressPercent = ((currentSlideIndex - 1) / (totalSlides - 1)) * 100;
+      document.getElementById("progress-fill").style.width = `${progressPercent}%`;
+
+      // Update counter text
+      document.getElementById("slide-counter").innerText = `${currentSlideIndex} / ${totalSlides}`;
+
+      // Trigger custom canvas charts redraw on slide entry
+      if (currentSlideIndex === 3) {
+        drawProblemStatsChart();
+      } else if (currentSlideIndex === 8) {
+        drawMarketSizeChart();
+      } else if (currentSlideIndex === 19) {
+        drawBurndownChart();
+      }
+    }
+
+    function nextSlide() {
+      if (currentSlideIndex < totalSlides) {
+        currentSlideIndex++;
+        updateControls();
+      }
+    }
+
+    function prevSlide() {
+      if (currentSlideIndex > 1) {
+        currentSlideIndex--;
+        updateControls();
+      }
+    }
+
+    function jumpToSlide(index) {
+      currentSlideIndex = index;
+      updateControls();
+    }
+
+    function toggleSidebar() {
+      const sidebar = document.getElementById("sidebar");
+      if (sidebar.style.transform === "translateX(-320px)") {
+        sidebar.style.transform = "translateX(0)";
+        sidebar.style.width = "320px";
+      } else {
+        sidebar.style.transform = "translateX(-320px)";
+        sidebar.style.width = "0px";
+      }
+    }
+
+    // Canvas charts drawing logic
+    function drawProblemStatsChart() {
+      const c = document.getElementById("canvas-problem-stats");
+      if (!c) return;
+      const ctx = c.getContext("2d");
+      
+      // Set canvas size based on bounding client rect
+      c.width = c.clientWidth * window.devicePixelRatio;
+      c.height = c.clientHeight * window.devicePixelRatio;
+      ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+      
+      const w = c.clientWidth;
+      const h = c.clientHeight;
+      
+      ctx.clearRect(0, 0, w, h);
+      
+      // Title
+      ctx.fillStyle = "#94a3b8";
+      ctx.font = "bold 11px Inter";
+      ctx.fillText("PLANNING DELAY & ESTIMATION OVERHEADS (%)", 20, 26);
+      
+      const bars = [
+        { label: "Planning Time", value: 76, color: "#3b82f6" },
+        { label: "Estimation Error", value: 85, color: "#8b5cf6" },
+        { label: "Scope Creep", value: 68, color: "#06b6d4" }
+      ];
+      
+      const startX = 40;
+      const startY = 70;
+      const barHeight = 24;
+      const spacing = 45;
+      const maxBarWidth = w - 180;
+      
+      bars.forEach((bar, idx) => {
+        const y = startY + (idx * spacing);
+        
+        // Label
+        ctx.fillStyle = "#f8fafc";
+        ctx.font = "12px Inter";
+        ctx.fillText(bar.label, startX, y + 16);
+        
+        // Background track
+        ctx.fillStyle = "rgba(255, 255, 255, 0.04)";
+        ctx.fillRect(startX + 110, y, maxBarWidth, barHeight);
+        
+        // Colored bar fill animation simulation
+        ctx.fillStyle = bar.color;
+        const currentWidth = maxBarWidth * (bar.value / 100);
+        ctx.fillRect(startX + 110, y, currentWidth, barHeight);
+        
+        // Value text
+        ctx.fillStyle = "#f8fafc";
+        ctx.font = "bold 12px JetBrains Mono";
+        ctx.fillText(`${bar.value}%`, startX + 115 + maxBarWidth, y + 17);
+      });
+    }
+
+    function drawMarketSizeChart() {
+      const c = document.getElementById("canvas-market-opportunity");
+      if (!c) return;
+      const ctx = c.getContext("2d");
+      
+      c.width = c.clientWidth * window.devicePixelRatio;
+      c.height = c.clientHeight * window.devicePixelRatio;
+      ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+      
+      const w = c.clientWidth;
+      const h = c.clientHeight;
+      ctx.clearRect(0, 0, w, h);
+      
+      // Target TAM/SAM/SOM Concentric Circles
+      const centerX = w / 2;
+      const centerY = h / 2 + 10;
+      
+      const circles = [
+        { radius: 85, label: "TAM: $20.4B", color: "rgba(59, 130, 246, 0.15)", border: "#3b82f6" },
+        { radius: 55, label: "SAM: $8.2B", color: "rgba(139, 92, 246, 0.2)", border: "#8b5cf6" },
+        { radius: 30, label: "SOM: $1.5B", color: "rgba(6, 182, 212, 0.35)", border: "#06b6d4" }
+      ];
+      
+      circles.forEach(circle => {
+        ctx.beginPath();
+        ctx.arc(centerX, centerY, circle.radius, 0, 2 * Math.PI);
+        ctx.fillStyle = circle.color;
+        ctx.fill();
+        ctx.strokeStyle = circle.border;
+        ctx.lineWidth = 1.5;
+        ctx.stroke();
+      });
+      
+      // Overlay text markers
+      ctx.font = "bold 10px JetBrains Mono";
+      ctx.fillStyle = "#f8fafc";
+      ctx.textAlign = "center";
+      ctx.fillText("SOM: $1.5B", centerX, centerY + 3);
+      
+      ctx.fillStyle = "#94a3b8";
+      ctx.fillText("SAM: $8.2B", centerX, centerY - 62);
+      ctx.fillText("TAM: $20.4B", centerX, centerY - 92);
+    }
+
+    function drawBurndownChart() {
+      const c = document.getElementById("canvas-analytics-burndown");
+      if (!c) return;
+      const ctx = c.getContext("2d");
+      
+      c.width = c.clientWidth * window.devicePixelRatio;
+      c.height = c.clientHeight * window.devicePixelRatio;
+      ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+      
+      const w = c.clientWidth;
+      const h = c.clientHeight;
+      ctx.clearRect(0, 0, w, h);
+      
+      ctx.strokeStyle = "rgba(255,255,255,0.06)";
+      ctx.lineWidth = 1;
+      
+      // Grid lines
+      for (let i = 40; i < w - 20; i += (w - 60) / 4) {
+        ctx.beginPath();
+        ctx.moveTo(i, 30);
+        ctx.lineTo(i, h - 30);
+        ctx.stroke();
+      }
+      
+      // Ideal Burndown line (diagonal)
+      ctx.strokeStyle = "rgba(255,255,255,0.2)";
+      ctx.setLineDash([5, 5]);
+      ctx.beginPath();
+      ctx.moveTo(40, 40);
+      ctx.lineTo(w - 40, h - 40);
+      ctx.stroke();
+      ctx.setLineDash([]);
+      
+      // Actual Burndown line
+      ctx.strokeStyle = "#3b82f6";
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.moveTo(40, 40);
+      
+      const points = [
+        { x: 40, y: 40 },
+        { x: 40 + (w - 80) * 0.25, y: 40 + (h - 80) * 0.15 },
+        { x: 40 + (w - 80) * 0.5, y: 40 + (h - 80) * 0.45 },
+        { x: 40 + (w - 80) * 0.75, y: 40 + (h - 80) * 0.8 },
+        { x: w - 40, y: h - 40 }
+      ];
+      
+      points.forEach(p => {
+        ctx.lineTo(p.x, p.y);
+      });
+      ctx.stroke();
+      
+      // Points circles
+      ctx.fillStyle = "#8b5cf6";
+      points.forEach(p => {
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, 4, 0, 2 * Math.PI);
+        ctx.fill();
+      });
+      
+      ctx.font = "bold 9px JetBrains Mono";
+      ctx.fillStyle = "#94a3b8";
+      ctx.textAlign = "left";
+      ctx.fillText("Ideal Burn", 50, 60);
+      ctx.fillStyle = "#3b82f6";
+      ctx.fillText("SprintMaster AI Burn", 50, 80);
+    }
+  </script>
+</body>
+</html>
